@@ -132,13 +132,13 @@
     <div class="headline">PRESENCE IS POWER</div>
     <div class="countdown-label">Doors Open In</div>
     <div class="countdown">
+      <div class="countdown-unit"><span class="countdown-num" id="cd-days">98</span><span class="countdown-sub">Days</span></div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit"><span class="countdown-num" id="cd-hours">00</span><span class="countdown-sub">Hours</span></div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit"><span class="countdown-num" id="cd-mins">00</span><span class="countdown-sub">Mins</span></div>
+      <span class="countdown-sep">:</span>
       <div class="countdown-unit"><span class="countdown-num" id="cd-secs">00</span><span class="countdown-sub">Secs</span></div>
-      <span class="countdown-sep">:</span>
-      <div class="countdown-unit"><span class="countdown-num" id="cd-mins">12</span><span class="countdown-sub">Mins</span></div>
-      <span class="countdown-sep">:</span>
-      <div class="countdown-unit"><span class="countdown-num" id="cd-hours">45</span><span class="countdown-sub">Hours</span></div>
-      <span class="countdown-sep">:</span>
-      <div class="countdown-unit"><span class="countdown-num" id="cd-days">30</span><span class="countdown-sub">Days</span></div>
     </div>
     <div class="form-card">
       <div class="form-title">🔒 Lock in Access</div>
@@ -161,10 +161,49 @@
           </div>
         </div>
       </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;margin-bottom:2px;">
+        <input type="checkbox" id="consent-check" style="margin-top:3px;accent-color:#C8885A;width:15px;height:15px;flex-shrink:0;cursor:pointer;"/>
+        <label for="consent-check" style="font-family:'Barlow',sans-serif;font-size:12px;color:#888;line-height:1.5;cursor:pointer;">
+          I agree to the
+          <a href="#" onclick="document.getElementById('tos-modal').style.display='flex';return false;" style="color:#C8885A;font-weight:700;text-decoration:underline;">Terms of Service</a>
+          and
+          <a href="#" onclick="document.getElementById('pp-modal').style.display='flex';return false;" style="color:#C8885A;font-weight:700;text-decoration:underline;">Privacy Policy</a>
+        </label>
+      </div>
       <button class="cta-btn" onclick="handleSubmit()">Secure My Spot</button>
       <div class="spots-row">Reserved Access Remaining 48,000</div>
     </div>
-    <div class="about-link"><a href="#">About</a></div>
+    <div class="about-link"><a href="#" onclick="document.getElementById('about-modal').style.display='flex';return false;">About</a></div>
+
+  <!-- About Modal -->
+  <div id="about-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)this.style.display='none';">
+    <div style="background:#fff;border-radius:18px;max-width:520px;width:100%;padding:40px 36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto;">
+      <button onclick="document.getElementById('about-modal').style.display='none'" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#888;line-height:1;">&times;</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div style="width:3px;height:28px;background:linear-gradient(180deg,#D9A070,#A86A3A);border-radius:2px;"></div>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.1em;color:#111;">ABOUT MASSED</span>
+      </div>
+      <div style="width:100%;height:1px;background:linear-gradient(90deg,#C8885A,#f0eeea);margin-bottom:24px;"></div>
+      <p style="font-family:'Barlow',sans-serif;font-size:15px;line-height:1.8;color:#333;margin-bottom:16px;">
+        Massed was created for those who understand that <strong>presence is power.</strong>
+      </p>
+      <p style="font-family:'Barlow',sans-serif;font-size:15px;line-height:1.8;color:#333;margin-bottom:16px;">
+        In a digital world built on constant subscriptions and temporary solutions, we chose a different path. We believe your online presence should feel intentional, structured, and built to last.
+      </p>
+      <p style="font-family:'Barlow',sans-serif;font-size:15px;line-height:1.8;color:#333;margin-bottom:16px;">
+        Massed is not just a link platform. It is a refined digital foundation — designed for those who sell, lead, advise, build, and operate at a higher standard.
+      </p>
+      <p style="font-family:'Barlow',sans-serif;font-size:15px;line-height:1.8;color:#333;margin-bottom:16px;">
+        Whether you manage listings, services, products, or partnerships, your digital front door should reflect permanence, not pressure. We provide the infrastructure to keep your brand anchored, streamlined, and intact.
+      </p>
+      <p style="font-family:'Barlow',sans-serif;font-size:15px;line-height:1.8;color:#333;margin-bottom:24px;">
+        No noise. No clutter. No instability. Just a platform built for long-term positioning. Massed exists for those who take their presence seriously.
+      </p>
+      <div style="border-top:1px solid #e8e6e0;padding-top:20px;text-align:center;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.12em;color:#C8885A;">Anchor it. Build on it. Keep it.</p>
+      </div>
+    </div>
+  </div>
   </div>
 </div>
 <script>
@@ -208,9 +247,68 @@
   function handleSubmit(){
     const name=document.querySelector('input[type="text"]').value.trim();
     const email=document.querySelector('input[type="email"]').value.trim();
+    const consent=document.getElementById('consent-check').checked;
     if(!name||!email){ alert('Please enter your full name and email.'); return; }
+    if(!consent){ alert('Please agree to the Terms of Service and Privacy Policy to continue.'); return; }
     alert('🔒 Spot secured! Watch your inbox for confirmation.');
   }
 </script>
+
+  <!-- Terms of Service Modal -->
+  <div id="tos-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1001;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)this.style.display='none';">
+    <div style="background:#fff;border-radius:18px;max-width:520px;width:100%;padding:40px 36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto;">
+      <button onclick="document.getElementById('tos-modal').style.display='none'" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">&times;</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div style="width:3px;height:28px;background:linear-gradient(180deg,#D9A070,#A86A3A);border-radius:2px;"></div>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.1em;color:#111;">TERMS OF SERVICE</span>
+      </div>
+      <div style="width:100%;height:1px;background:linear-gradient(90deg,#C8885A,#f0eeea);margin-bottom:24px;"></div>
+
+      <p style="font-family:'Barlow',sans-serif;font-size:13px;color:#888;margin-bottom:20px;">Last updated: March 2026</p>
+
+      <div style="font-family:'Barlow',sans-serif;font-size:14px;line-height:1.8;color:#333;display:flex;flex-direction:column;gap:16px;">
+        <div><strong style="color:#111;">1. Acceptance</strong><p>By registering for early access to Massed, you agree to these Terms of Service. If you do not agree, please do not submit your information.</p></div>
+        <div><strong style="color:#111;">2. Pre-Launch Registration</strong><p>This is a pre-launch waitlist. Submitting your information reserves your interest in accessing the Massed platform. It does not guarantee access, constitute a contract, or create any financial obligation on either party.</p></div>
+        <div><strong style="color:#111;">3. Your Information</strong><p>You agree to provide accurate and truthful information. Your username selection is not guaranteed and is subject to availability at launch.</p></div>
+        <div><strong style="color:#111;">4. Communications</strong><p>By registering, you consent to receiving emails from Massed related to your waitlist status, platform updates, and launch announcements. You may unsubscribe at any time.</p></div>
+        <div><strong style="color:#111;">5. Intellectual Property</strong><p>All content, branding, and materials associated with Massed are the exclusive property of Massed HQ. Unauthorized use is prohibited.</p></div>
+        <div><strong style="color:#111;">6. Changes</strong><p>We reserve the right to modify these terms at any time. Continued use of this registration page constitutes acceptance of any updated terms.</p></div>
+        <div><strong style="color:#111;">7. Contact</strong><p>For any questions regarding these terms, please contact us through the official Massed platform upon launch.</p></div>
+      </div>
+
+      <div style="border-top:1px solid #e8e6e0;padding-top:20px;margin-top:24px;text-align:center;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.12em;color:#C8885A;">Anchor it. Build on it. Keep it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div id="pp-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1001;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)this.style.display='none';">
+    <div style="background:#fff;border-radius:18px;max-width:520px;width:100%;padding:40px 36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);max-height:90vh;overflow-y:auto;">
+      <button onclick="document.getElementById('pp-modal').style.display='none'" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">&times;</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div style="width:3px;height:28px;background:linear-gradient(180deg,#D9A070,#A86A3A);border-radius:2px;"></div>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.1em;color:#111;">PRIVACY POLICY</span>
+      </div>
+      <div style="width:100%;height:1px;background:linear-gradient(90deg,#C8885A,#f0eeea);margin-bottom:24px;"></div>
+
+      <p style="font-family:'Barlow',sans-serif;font-size:13px;color:#888;margin-bottom:20px;">Last updated: March 2026</p>
+
+      <div style="font-family:'Barlow',sans-serif;font-size:14px;line-height:1.8;color:#333;display:flex;flex-direction:column;gap:16px;">
+        <div><strong style="color:#111;">1. Information We Collect</strong><p>When you register for early access, we collect your full name, email address, phone number (optional), referral code (optional), and your chosen username.</p></div>
+        <div><strong style="color:#111;">2. How We Use Your Information</strong><p>Your information is used solely to manage your waitlist registration, communicate launch updates, and reserve your username preference. We do not use your data for advertising or sell it to third parties — ever.</p></div>
+        <div><strong style="color:#111;">3. Data Storage</strong><p>Your data is stored securely and is only accessible to authorized Massed team members. We use industry-standard security practices to protect your information.</p></div>
+        <div><strong style="color:#111;">4. Your Rights</strong><p>You have the right to request access to, correction of, or deletion of your personal data at any time. To exercise these rights, contact us through the official Massed platform upon launch.</p></div>
+        <div><strong style="color:#111;">5. Cookies</strong><p>This registration page does not use tracking cookies or third-party analytics tools.</p></div>
+        <div><strong style="color:#111;">6. Third Parties</strong><p>We do not share, sell, rent, or trade your personal information with any third parties for their promotional purposes.</p></div>
+        <div><strong style="color:#111;">7. Unsubscribe</strong><p>You may opt out of communications at any time by clicking the unsubscribe link in any email we send, or by contacting us directly.</p></div>
+        <div><strong style="color:#111;">8. GDPR Compliance</strong><p>If you are located in the European Economic Area, you have additional rights under GDPR including the right to data portability and the right to lodge a complaint with your local supervisory authority.</p></div>
+      </div>
+
+      <div style="border-top:1px solid #e8e6e0;padding-top:20px;margin-top:24px;text-align:center;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.12em;color:#C8885A;">Your data. Your trust. Our responsibility.</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
