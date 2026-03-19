@@ -1,8 +1,6 @@
-// api/setup-db.js
-// Run ONCE: visit /api/setup-db?secret=massed2024setup then delete this file
-import { sql } from '@vercel/postgres';
+const { sql } = require('@vercel/postgres');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.query.secret !== process.env.SETUP_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -41,4 +39,4 @@ export default async function handler(req, res) {
   } catch(err) {
     return res.status(500).json({ error: err.message });
   }
-}
+};
