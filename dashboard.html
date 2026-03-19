@@ -343,17 +343,41 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .modal-confirm{flex:1;padding:11px;background:var(--rose);border:none;border-radius:8px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;}
 
 @media(max-width:768px){
-  #vault-screen{flex-direction:column;gap:16px;}
-  .vault-left{width:100%;align-items:center;}
-  .vault-right{width:min(280px,90vw);}
+  /* Vault login - stack vertically, hide vault image on mobile */
+  #vault-screen{flex-direction:column;gap:12px;padding:20px 16px;justify-content:flex-start;padding-top:40px;}
+  .vault-left{width:100%;max-width:420px;align-items:flex-start;}
+  .vault-right{display:none;}
+  .vault-logo{font-size:2.4rem;}
+  .role-selector{width:100%;}
+  .role-btn{font-size:0.9rem;padding:12px;}
+  .v-field input{font-size:1rem;padding:14px 16px;}
+  .access-btn{font-size:1rem;padding:16px;}
+  .form-heading{font-size:1.2rem;}
+
+  /* Dashboard - collapsed sidebar with icons only */
   .sidebar{width:54px;}
   .sidebar-section-label,.nav-item span:not(.n-icon),.nav-item .n-badge,.sidebar-user-name,.sidebar-user-role{display:none;}
   .nav-item{justify-content:center;padding:10px;}
-  .page-content{padding:16px;}
+  .n-icon{font-size:1.2rem;}
+
+  /* Dashboard content */
+  .page-content{padding:12px;}
   .dash-grid{grid-template-columns:1fr;}
-  .kanban{grid-template-columns:1fr 1fr;}
+  .stats-row{grid-template-columns:1fr 1fr!important;}
+  .kanban{grid-template-columns:1fr;}
   .gen-grid{grid-template-columns:1fr;}
   .notes-layout{grid-template-columns:1fr;}
+  .analytics-grid{grid-template-columns:1fr 1fr;}
+  .table-wrap{overflow-x:auto;}
+  .topbar{padding:8px 12px;}
+  .topbar-logo img{height:28px;}
+  .topbar-actions{gap:6px;}
+  .topbar-add{display:none;}
+}
+
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr!important;}
+  .vault-logo{font-size:2rem;letter-spacing:0.2em;}
 }
 
 /* ===== ADMIN DASHBOARD EXTRAS ===== */
@@ -1512,20 +1536,4 @@ function exportCSV(){
 
 // ===== ADMIN RESET =====
 
-function openResetModal(){document.getElementById('resetModal').classList.add('open');}
-function closeModal(){document.getElementById('resetModal').classList.remove('open');}
-function doReset(){
-  const nu=document.getElementById('newUsername').value.trim(),np=document.getElementById('newPassword').value,cp=document.getElementById('confirmPassword').value;
-  if(!nu||!np){showToast('✗ Please fill all fields','error');return;}
-  if(np!==cp){showToast('✗ Passwords do not match','error');return;}
-  credentials.coordinator.username=nu;credentials.coordinator.password=np;
-  closeModal();showToast('✓ Coordinator credentials reset','success');
-  showTab('reset',document.getElementById('nav-reset'));
-}
-
-// ===== TOAST =====
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast'+(type?' '+type:'');
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remo
+function openResetModal(){document.getElementById(
