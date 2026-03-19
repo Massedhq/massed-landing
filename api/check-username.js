@@ -1,5 +1,6 @@
-import { sql } from '@vercel/postgres';
-export default async function handler(req, res) {
+const { sql } = require('@vercel/postgres');
+
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const { username } = req.query;
   if (!username || username.length < 3) return res.status(200).json({ available: false, message: 'At least 3 characters required' });
@@ -11,4 +12,4 @@ export default async function handler(req, res) {
   } catch(err) {
     return res.status(500).json({ error: err.message });
   }
-}
+};
