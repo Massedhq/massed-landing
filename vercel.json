@@ -9,11 +9,3 @@
   }
 }
 ```
-
-Click **Commit changes** → **Commit changes**
-
----
-
-After that Vercel will automatically redeploy. Wait about 1 minute then try the setup URL again:
-```
-https://massed-landing.vercel.app/api/setup-db?secret=massed2024setup
