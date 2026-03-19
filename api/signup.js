@@ -1,10 +1,9 @@
-// api/signup.js
-import { sql } from '@vercel/postgres';
-import { Resend } from 'resend';
+const { sql } = require('@vercel/postgres');
+const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -42,38 +41,34 @@ export default async function handler(req, res) {
     const waitlist_pos = parseInt(countRes.rows[0].count) + 1;
     const spotsLeft = 48000 - waitlist_pos;
 
-    await sql`
-      INSERT INTO signups (full_name, email, phone, username, referral_code, waitlist_pos)
-      VALUES (${finalName}, ${finalEmail.toLowerCase()}, ${finalPhone||null}, ${finalUsername.toLowerCase()}, ${finalReferral?finalReferral.toUpperCase():null}, ${waitlist_pos})
+    const insertResult = await sql`
+      INSERT INTO signups (full_name, email, phone, username, referral_code, waitlist_pos, email_sent)
+      VALUES (${finalName}, ${finalEmail.toLowerCase()}, ${finalPhone||null}, ${finalUsername.toLowerCase()}, ${finalReferral?finalReferral.toUpperCase():null}, ${waitlist_pos}, FALSE)
+      RETURNING id;
     `;
+    const signupId = insertResult.rows[0].id;
 
     if (finalReferral) {
       await sql`UPDATE referral_codes SET use_count=use_count+1 WHERE UPPER(code)=UPPER(${finalReferral})`;
     }
 
+    let emailSent = false;
     const FROM = process.env.FROM_EMAIL || 'hello@massed.io';
-    const COORD = process.env.COORDINATOR_EMAIL;
-    const ADMIN = process.env.ADMIN_EMAIL;
 
-    await Promise.all([
-      resend.emails.send({
-        from: `MASSED <${FROM}>`, to: finalEmail,
+    try {
+      await resend.emails.send({
+        from: `MASSED <${FROM}>`,
+        to: finalEmail,
         subject: `Your username massed.io/${finalUsername} is reserved! 🔐`,
-        html: `<div style="max-width:560px;margin:40px auto;font-family:Georgia,serif;background:#0d0d0d;border:1px solid rgba(196,154,108,0.3);border-radius:16px;overflow:hidden;"><div style="background:linear-gradient(135deg,#1a1208,#0d0d0d);padding:32px;text-align:center;border-bottom:1px solid rgba(196,154,108,0.2);"><h1 style="font-size:2.5rem;font-weight:900;letter-spacing:0.3em;color:#C49A6C;margin:0;">MASSED</h1><p style="color:#6a7080;font-size:0.6rem;letter-spacing:0.5em;margin:6px 0 0;">PRESENCE IS POWER</p></div><div style="padding:36px;"><h2 style="color:#F5F0E8;font-size:1.3rem;margin:0 0 8px;">Your username is reserved! 🎉</h2><p style="color:#A0A8B0;margin:0 0 24px;">Hi ${finalName}, you're officially on the MASSED waitlist.</p><div style="background:rgba(196,154,108,0.08);border:1px solid rgba(196,154,108,0.25);border-radius:10px;padding:20px;margin-bottom:20px;text-align:center;"><p style="color:#A0A8B0;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;margin:0 0 8px;">Your Reserved Link</p><p style="color:#C49A6C;font-size:1.4rem;font-weight:700;margin:0;">massed.io/${finalUsername}</p></div><div style="background:rgba(196,154,108,0.05);border:1px solid rgba(196,154,108,0.15);border-radius:10px;padding:16px;margin-bottom:24px;text-align:center;"><p style="color:#A0A8B0;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;margin:0 0 6px;">Waitlist Position</p><p style="color:#C49A6C;font-size:2.2rem;font-weight:900;margin:0;">#${waitlist_pos}</p><p style="color:#6a7080;font-size:0.78rem;margin:4px 0 0;">${spotsLeft.toLocaleString()} spots remaining of 48,000</p></div><p style="color:#A0A8B0;font-size:0.88rem;line-height:1.7;">We'll be in touch soon with next steps. Stay ready.</p></div></div>`
-      }),
-      resend.emails.send({
-        from: `MASSED System <${FROM}>`, to: COORD,
-        subject: `🆕 New Signup: ${finalName} claimed @${finalUsername}`,
-        html: `<div style="max-width:560px;margin:40px auto;font-family:Arial,sans-serif;background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;"><div style="background:linear-gradient(135deg,#1a1208,#2a1e10);padding:24px 28px;"><h1 style="color:#C49A6C;margin:0;font-size:1.4rem;letter-spacing:0.2em;">MASSED</h1><p style="color:#6a7080;margin:4px 0 0;font-size:0.8rem;">Coordinator Alert</p></div><div style="padding:28px;"><table style="width:100%;border-collapse:collapse;font-size:0.9rem;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;border-bottom:1px solid #f3f4f6;">Full Name</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f3f4f6;">${finalName}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalEmail}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalPhone||'—'}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Username</td><td style="padding:8px 0;font-weight:700;color:#C49A6C;border-bottom:1px solid #f3f4f6;">massed.io/${finalUsername}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Referral Code</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalReferral||'None'}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Waitlist #</td><td style="padding:8px 0;font-weight:700;border-bottom:1px solid #f3f4f6;">#${waitlist_pos}</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Spots Left</td><td style="padding:8px 0;font-weight:700;color:#16a34a;">${spotsLeft.toLocaleString()} / 48,000</td></tr></table></div></div>`
-      }),
-      resend.emails.send({
-        from: `MASSED System <${FROM}>`, to: ADMIN,
-        subject: `🆕 New Signup: ${finalName} claimed @${finalUsername}`,
-        html: `<div style="max-width:560px;margin:40px auto;font-family:Arial,sans-serif;background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;"><div style="background:linear-gradient(135deg,#1a1208,#2a1e10);padding:24px 28px;"><h1 style="color:#C49A6C;margin:0;font-size:1.4rem;letter-spacing:0.2em;">MASSED</h1><p style="color:#ef4444;margin:4px 0 0;font-size:0.8rem;">Admin Alert</p></div><div style="padding:28px;"><table style="width:100%;border-collapse:collapse;font-size:0.9rem;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;border-bottom:1px solid #f3f4f6;">Full Name</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f3f4f6;">${finalName}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Email</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalEmail}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Phone</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalPhone||'—'}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Username</td><td style="padding:8px 0;font-weight:700;color:#C49A6C;border-bottom:1px solid #f3f4f6;">massed.io/${finalUsername}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Referral Code</td><td style="padding:8px 0;border-bottom:1px solid #f3f4f6;">${finalReferral||'None'}</td></tr><tr><td style="padding:8px 0;color:#6b7280;border-bottom:1px solid #f3f4f6;">Waitlist #</td><td style="padding:8px 0;font-weight:700;border-bottom:1px solid #f3f4f6;">#${waitlist_pos}</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Spots Left</td><td style="padding:8px 0;font-weight:700;color:#16a34a;">${spotsLeft.toLocaleString()} / 48,000</td></tr></table></div></div>`
-      })
-    ]);
+        html: `<div style="max-width:560px;margin:40px auto;font-family:Georgia,serif;background:#0d0d0d;border:1px solid rgba(196,154,108,0.3);border-radius:16px;overflow:hidden;"><div style="background:linear-gradient(135deg,#1a1208,#0d0d0d);padding:32px;text-align:center;border-bottom:1px solid rgba(196,154,108,0.2);"><h1 style="font-size:2.5rem;font-weight:900;letter-spacing:0.3em;color:#C49A6C;margin:0;">MASSED</h1><p style="color:#6a7080;font-size:0.6rem;letter-spacing:0.5em;margin:6px 0 0;">PRESENCE IS POWER</p></div><div style="padding:36px;"><h2 style="color:#F5F0E8;font-size:1.3rem;margin:0 0 8px;">Your username is reserved! 🎉</h2><p style="color:#A0A8B0;margin:0 0 24px;">Hi ${finalName}, you're officially on the MASSED waitlist.</p><div style="background:rgba(196,154,108,0.08);border:1px solid rgba(196,154,108,0.25);border-radius:10px;padding:20px;margin-bottom:20px;text-align:center;"><p style="color:#A0A8B0;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;margin:0 0 8px;">Your Reserved Link</p><p style="color:#C49A6C;font-size:1.4rem;font-weight:700;margin:0;">massed.io/${finalUsername}</p></div><div style="background:rgba(196,154,108,0.05);border:1px solid rgba(196,154,108,0.15);border-radius:10px;padding:16px;margin-bottom:24px;text-align:center;"><p style="color:#A0A8B0;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;margin:0 0 6px;">Your Waitlist Position</p><p style="color:#C49A6C;font-size:2.2rem;font-weight:900;margin:0;">#${waitlist_pos}</p><p style="color:#6a7080;font-size:0.78rem;margin:4px 0 0;">${spotsLeft.toLocaleString()} spots remaining of 48,000</p></div><p style="color:#A0A8B0;font-size:0.88rem;line-height:1.7;">We'll be in touch soon. Stay ready.</p></div></div>`
+      });
+      emailSent = true;
+      await sql`UPDATE signups SET email_sent=TRUE, email_sent_at=NOW() WHERE id=${signupId}`;
+    } catch(emailErr) {
+      console.error('Email failed:', emailErr);
+    }
 
-    return res.status(200).json({ success:true, username:finalUsername, waitlist_pos, spots_remaining:spotsLeft });
+    return res.status(200).json({ success:true, username:finalUsername, waitlist_pos, spots_remaining:spotsLeft, email_sent:emailSent });
 
   } catch(err) {
     console.error(err);
@@ -81,4 +76,4 @@ export default async function handler(req, res) {
     if (err.message?.includes('email'))    return res.status(409).json({ error: 'That email is already registered.' });
     return res.status(500).json({ error: 'Something went wrong. Please try again.' });
   }
-}
+};
