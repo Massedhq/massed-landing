@@ -21,7 +21,7 @@ function attemptLogin(){
   else{err.textContent='✗  Invalid credentials.';document.getElementById('password').value='';setTimeout(()=>err.textContent='',4000);}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('vault-screen').classList.contains('hidden'))attemptLogin();});
-function biometricLogin(){if(animating)return;showToast('🔐 Scanning fingerprint…');setTimeout(()=>{loggedInRole=currentRole;loggedInUser=credentials[currentRole].username;showToast('✓ Biometric verified','success');triggerVaultOpen();},1800);}
+function biometricLogin(){showToast('Biometric authentication not available','error');}
 
 function triggerVaultOpen(){
   animating=true;
