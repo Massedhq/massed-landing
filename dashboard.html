@@ -461,14 +461,6 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .platform-settings-input input{width:100px;padding:7px 10px;background:#f9fafb;border:1px solid var(--border);border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:0.88rem;outline:none;text-align:right;}
 
 </style>
-
-<style id="mobileFix">
-@media(max-width:900px){
-  .vault-right{display:none!important;}
-  .vault-left{width:100%!important;max-width:100%!important;}
-  #vault-screen{padding:30px 20px!important;justify-content:center!important;align-items:flex-start!important;}
-}
-</style>
 </head>
 <body>
 
@@ -495,10 +487,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       </div>
     </div>
     <button class="access-btn" id="accessBtn" onclick="attemptLogin()">Unlock Access</button>
-    <button class="bio-btn" onclick="biometricLogin()">
-      <svg viewBox="0 0 24 24"><path d="M12 1C7 1 3 5 3 10v2c0 1.1.9 2 2 2h1c.6 0 1-.4 1-1v-3c0-2.8 2.2-5 5-5s5 2.2 5 5v3c0 .6.4 1 1 1h1c1.1 0 2-.9 2-2v-2C21 5 17 1 12 1z"/><path d="M8 14c0 .6.1 1.2.3 1.8L10 19c.4 1 1.3 1.7 2.4 1.7s2-.7 2.4-1.7l1.7-3.2c.2-.6.3-1.2.3-1.8"/><circle cx="12" cy="10" r="1"/></svg>
-      Fingerprint Authentication
-    </button>
+
   </div>
   <div class="vault-right">
     <div class="vault-status" id="vaultStatus">LOCKED</div>
@@ -642,7 +631,7 @@ function attemptLogin(){
   else{err.textContent='✗  Invalid credentials.';document.getElementById('password').value='';setTimeout(()=>err.textContent='',4000);}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('vault-screen').classList.contains('hidden'))attemptLogin();});
-function biometricLogin(){if(animating)return;showToast('🔐 Scanning fingerprint…');setTimeout(()=>{loggedInRole=currentRole;loggedInUser=credentials[currentRole].username;showToast('✓ Biometric verified','success');triggerVaultOpen();},1800);}
+function biometricLogin(){showToast('Biometric authentication not available','error');}
 
 function triggerVaultOpen(){
   animating=true;
@@ -1537,4 +1526,18 @@ function bulkGenerate(){
 function exportCSV(){
   const h=['Name','Handle','Platform','Audience','Status','Code','Claims'];
   const rows=performers.map(p=>[p.name,p.handle,p.contacted,p.audience,p.status,p.code||'',p.claims!=null?p.claims:'']);
-  const csv=[h,...rows].map(r=>r.join(',')).join('
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='massed_performers.csv';a.click();
+  showToast('✓ CSV exported','success');
+}
+
+// ===== ADMIN RESET =====
+
+function openResetModal(){document.getElementById('resetModal').classList.add('open');}
+function closeModal(){document.getElementById('resetModal').classList.remove('open');}
+function doReset(){
+  const nu=document.getElementById('newUsername').value.trim(),np=document.getElementById('newPassword').value,cp=document.getElementById('confirmPassword').value;
+  if(!nu||!np){showToast('✗ Please fill all fields','error');return;}
+  if(np!==cp){showToast('✗ Passwords do not match','error');return;}
+  credentials.coordinator.username=nu;credentials.coordinator.password=np;
+  closeModal();showToast('✓ Coordinator credent
