@@ -1,5 +1,6 @@
-import { sql } from '@vercel/postgres';
-export default async function handler(req, res) {
+const { sql } = require('@vercel/postgres');
+
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
     const r = await sql`SELECT COUNT(*) as count FROM signups`;
@@ -9,4 +10,4 @@ export default async function handler(req, res) {
   } catch(err) {
     return res.status(500).json({ error: err.message });
   }
-}
+};
