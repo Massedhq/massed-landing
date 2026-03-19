@@ -461,6 +461,14 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .platform-settings-input input{width:100px;padding:7px 10px;background:#f9fafb;border:1px solid var(--border);border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:0.88rem;outline:none;text-align:right;}
 
 </style>
+
+<style id="mobileFix">
+@media(max-width:900px){
+  .vault-right{display:none!important;}
+  .vault-left{width:100%!important;max-width:100%!important;}
+  #vault-screen{padding:30px 20px!important;justify-content:center!important;align-items:flex-start!important;}
+}
+</style>
 </head>
 <body>
 
@@ -1529,11 +1537,4 @@ function bulkGenerate(){
 function exportCSV(){
   const h=['Name','Handle','Platform','Audience','Status','Code','Claims'];
   const rows=performers.map(p=>[p.name,p.handle,p.contacted,p.audience,p.status,p.code||'',p.claims!=null?p.claims:'']);
-  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='massed_performers.csv';a.click();
-  showToast('✓ CSV exported','success');
-}
-
-// ===== ADMIN RESET =====
-
-function openResetModal(){document.getElementById(
+  const csv=[h,...rows].map(r=>r.join(',')).join('
