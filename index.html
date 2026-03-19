@@ -339,6 +339,92 @@
       </div>
     </div>
   </div>
-  <script src="/CONNECT-TO-YOUR-PAGE.js"></script>
+  <script>
+const API = 'https://massed-landing.vercel.app';
+(function() {
+  const btn = Array.from(document.querySelectorAll('button, input[type=submit]'))
+    .find(el => /secure|spot|submit|sign.?up|reserve|join/i.test(el.textContent || el.value));
+  if (!btn) return;
+  function findInput(patterns) {
+    return Array.from(document.querySelectorAll('input, textarea'))
+      .find(el => patterns.some(p => p.test(el.placeholder || el.name || el.id || '')));
+  }
+  const nameInput     = findInput([/name/i]);
+  const emailInput    = findInput([/email/i]);
+  const phoneInput    = findInput([/phone/i]);
+  const referralInput = findInput([/referral|code/i]);
+  const usernameInput = findInput([/username|user.?name/i]);
+  if (usernameInput) {
+    let timer;
+    usernameInput.addEventListener('input', function() {
+      clearTimeout(timer);
+      const val = this.value.replace(/[^a-zA-Z0-9_]/g, '');
+      this.value = val;
+      if (val.length < 3) return;
+      timer = setTimeout(async () => {
+        try {
+          const r = await fetch(`${API}/api/check-username?username=${encodeURIComponent(val)}`);
+          const d = await r.json();
+          let status = document.getElementById('massed-username-status');
+          if (!status) {
+            status = document.createElement('div');
+            status.id = 'massed-username-status';
+            status.style.cssText = 'font-size:0.78rem;margin-top:4px;padding:0 4px;';
+            usernameInput.parentNode.insertAdjacentElement('afterend', status);
+          }
+          status.textContent = d.message;
+          status.style.color = d.available ? '#16a34a' : '#ef4444';
+        } catch(e) {}
+      }, 500);
+    });
+  }
+  btn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    const name     = nameInput?.value.trim()     || '';
+    const email    = emailInput?.value.trim()    || '';
+    const phone    = phoneInput?.value.trim()    || '';
+    const referral = referralInput?.value.trim() || '';
+    const username = usernameInput?.value.trim() || '';
+    if (!name)     { alert('Please enter your full name.'); return; }
+    if (!email)    { alert('Please enter your email address.'); return; }
+    if (!username) { alert('Please choose a username.'); return; }
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Securing your spot…';
+    try {
+      const res = await fetch(`${API}/api/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: name, email, phone, username, referral_code: referral })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+        return;
+      }
+      const form = btn.closest('form') || btn.closest('div') || btn.parentNode;
+      form.innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+          <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:8px;">You're locked in!</h2>
+          <p style="margin-bottom:16px;opacity:0.8;">Your username has been reserved.</p>
+          <div style="background:rgba(196,154,108,0.1);border:1px solid rgba(196,154,108,0.3);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">Your Reserved Link</div>
+            <div style="font-size:1.2rem;font-weight:700;color:#C49A6C;">massed.io/${data.username}</div>
+          </div>
+          <div style="font-size:1.8rem;font-weight:900;color:#C49A6C;">#${data.waitlist_pos}</div>
+          <div style="font-size:0.82rem;opacity:0.6;">${data.spots_remaining?.toLocaleString()} spots remaining</div>
+        </div>
+      `;
+    } catch(err) {
+      alert('Connection error. Please try again.');
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+})();
+</script>
 </body>
 </html>
