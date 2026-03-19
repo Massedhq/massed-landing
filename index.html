@@ -244,13 +244,42 @@
     }, 700);
   }
 
-  function handleSubmit(){
-    const name=document.querySelector('input[type="text"]').value.trim();
-    const email=document.querySelector('input[type="email"]').value.trim();
-    const consent=document.getElementById('consent-check').checked;
-    if(!name||!email){ alert('Please enter your full name and email.'); return; }
+  async function handleSubmit(){
+    const name = document.querySelectorAll('input[type="text"]')[0].value.trim();
+    const email = document.querySelector('input[type="email"]').value.trim();
+    const phone = document.querySelector('input[type="tel"]').value.trim();
+    const referral = document.querySelectorAll('input[type="text"]')[1].value.trim();
+    const username = document.getElementById('username-input').value.trim();
+    const consent = document.getElementById('consent-check').checked;
+
+    if(!name || !email){ alert('Please enter your full name and email.'); return; }
     if(!consent){ alert('Please agree to the Terms of Service and Privacy Policy to continue.'); return; }
-    alert('🔒 Spot secured! Watch your inbox for confirmation.');
+
+    const btn = document.querySelector('.cta-btn');
+    btn.textContent = 'Securing...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, referral, username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        btn.textContent = '✓ Spot Secured!';
+        btn.style.background = '#4caf50';
+        document.querySelector('.spots-row').textContent = 'Check your email for confirmation!';
+      } else {
+        btn.textContent = 'Secure My Spot';
+        btn.disabled = false;
+        alert(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch(e) {
+      btn.textContent = 'Secure My Spot';
+      btn.disabled = false;
+      alert('Connection error. Please try again.');
+    }
   }
 </script>
 
