@@ -7,8 +7,12 @@ const credentials={coordinator:{username:'Nicky2U',password:'Capri2026'},admin:{
 
 function setRole(r){
   currentRole=r;
-  document.getElementById('roleCoord').classList.toggle('active',r==='coordinator');
-  document.getElementById('roleAdmin').classList.toggle('active',r==='admin');
+  var coord=document.getElementById('roleCoord');
+  var admin=document.getElementById('roleAdmin');
+  var activeStyle='padding:14px;background:linear-gradient(135deg,rgba(196,154,108,0.25),rgba(196,154,108,0.1));color:#C49A6C;border:1px solid rgba(196,154,108,0.5);border-radius:6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;width:100%;';
+  var inactiveStyle='padding:14px;background:transparent;color:rgba(160,168,176,0.5);border:none;border-radius:6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;width:100%;';
+  coord.style.cssText=r==='coordinator'?activeStyle:inactiveStyle;
+  admin.style.cssText=r==='admin'?activeStyle:inactiveStyle;
   document.getElementById('formHeading').textContent=r==='coordinator'?'Coordinator Login':'Admin Login';
   document.getElementById('errorMsg').textContent='';
   document.getElementById('username').value='';document.getElementById('password').value='';
@@ -941,4 +945,3 @@ function showToast(msg,type=''){
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
 }
-
