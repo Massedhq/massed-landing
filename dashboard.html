@@ -35,8 +35,8 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .vault-left{display:flex;flex-direction:column;align-items:flex-start;width:min(440px,46vw);animation:fadeUp 1s ease forwards;opacity:0;}
 .vault-logo{font-family:'Cinzel',serif;font-size:clamp(2.8rem,6vw,5.5rem);font-weight:900;letter-spacing:0.3em;color:var(--rose);text-shadow:0 0 50px rgba(196,154,108,0.8),0 0 100px rgba(196,154,108,0.3);margin-bottom:6px;}
 .vault-sub{font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:0.5em;color:#6a7080;margin-bottom:36px;}
-.role-selector{display:flex;gap:6px;margin-bottom:22px;background:rgba(0,0,0,0.4);border:1px solid rgba(196,154,108,0.12);border-radius:9px;padding:3px;width:100%;}
-.role-btn{flex:1;padding:9px 12px;background:transparent;color:var(--text-light);opacity:0.5;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.82rem;letter-spacing:0.14em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;transition:all 0.3s;}
+.role-selector{display:flex;gap:0;margin-bottom:22px;background:rgba(0,0,0,0.4);border:1px solid rgba(196,154,108,0.2);border-radius:9px;padding:4px;width:100%;}
+.role-btn{flex:1;padding:14px 12px;background:transparent;color:var(--text-light);opacity:0.5;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.9rem;letter-spacing:0.14em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;transition:all 0.3s;-webkit-tap-highlight-color:rgba(196,154,108,0.3);touch-action:manipulation;min-height:48px;}
 .role-btn.active{background:linear-gradient(135deg,rgba(196,154,108,0.25),rgba(196,154,108,0.1));opacity:1;color:var(--rose);border:1px solid rgba(196,154,108,0.5);box-shadow:0 0 12px rgba(196,154,108,0.2);}
 .form-heading{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;letter-spacing:0.05em;color:var(--text-light);margin-bottom:24px;}
 .error-msg{color:#E86060;font-size:0.78rem;margin-bottom:10px;min-height:18px;}
@@ -465,41 +465,35 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <body>
 
 <!-- ===== VAULT / LOGIN ===== -->
-<div class="screen" id="vault-screen">
-  <div class="vault-left">
-    <div class="vault-logo">MASSED</div>
-    <div class="vault-sub">SECURE ACCESS PORTAL</div>
-    <div class="role-selector">
-      <button class="role-btn active" id="roleCoord" onclick="setRole('coordinator')">Coordinator</button>
-      <button class="role-btn" id="roleAdmin" onclick="setRole('admin')">Admin</button>
+<div class="screen" id="vault-screen" style="display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 90% 80% at 50% 55%,#1a1208 0%,#000 75%);">
+  <div style="width:100%;max-width:420px;padding:40px 24px;">
+    <div style="font-family:'Cinzel',serif;font-size:2.8rem;font-weight:900;letter-spacing:0.3em;color:#C49A6C;margin-bottom:6px;">MASSED</div>
+    <div style="font-family:'Orbitron',monospace;font-size:0.55rem;letter-spacing:0.5em;color:#5a6070;margin-bottom:32px;text-transform:uppercase;">Secure Access Portal</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;background:rgba(0,0,0,0.4);border:1px solid rgba(196,154,108,0.2);border-radius:9px;padding:4px;margin-bottom:22px;">
+      <button id="roleCoord" onclick="setRole('coordinator')" style="padding:14px;background:linear-gradient(135deg,rgba(196,154,108,0.25),rgba(196,154,108,0.1));color:#C49A6C;border:1px solid rgba(196,154,108,0.5);border-radius:6px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Coordinator</button>
+      <button id="roleAdmin" onclick="setRole('admin')" style="padding:14px;background:transparent;color:rgba(160,168,176,0.5);border:none;border-radius:6px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Admin</button>
     </div>
-    <div class="form-heading" id="formHeading">Coordinator Login</div>
-    <div class="error-msg" id="errorMsg"></div>
-    <div class="v-field">
-      <label>Username</label>
-      <input type="text" id="username" placeholder="Enter username" autocomplete="off">
+    <div style="font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:#F5F0E8;margin-bottom:20px;" id="formHeading">Coordinator Login</div>
+    <div style="color:#E86060;font-size:0.78rem;margin-bottom:10px;min-height:18px;" id="errorMsg"></div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(160,168,176,0.6);margin-bottom:8px;font-weight:700;">Username</label>
+      <input type="text" id="username" placeholder="Enter username" autocomplete="off" autocorrect="off" autocapitalize="off" style="width:100%;padding:14px 18px;background:rgba(0,0,0,0.45);border:1px solid rgba(196,154,108,0.22);border-radius:10px;color:#F5F0E8;font-family:'Rajdhani',sans-serif;font-size:1rem;outline:none;-webkit-appearance:none;box-sizing:border-box;">
     </div>
-    <div class="v-field">
-      <label>Password</label>
-      <div class="pw-wrap">
-        <input type="password" id="password" placeholder="Enter password">
-        <button class="pw-toggle" onclick="togglePw()" type="button"><span id="eyeIcon">👁</span></button>
+    <div style="margin-bottom:18px;">
+      <label style="display:block;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(160,168,176,0.6);margin-bottom:8px;font-weight:700;">Password</label>
+      <div style="position:relative;">
+        <input type="password" id="password" placeholder="Enter password" style="width:100%;padding:14px 46px 14px 18px;background:rgba(0,0,0,0.45);border:1px solid rgba(196,154,108,0.22);border-radius:10px;color:#F5F0E8;font-family:'Rajdhani',sans-serif;font-size:1rem;outline:none;-webkit-appearance:none;box-sizing:border-box;">
+        <button onclick="togglePw()" type="button" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(160,168,176,0.5);font-size:1rem;"><span id="eyeIcon">👁</span></button>
       </div>
     </div>
-    <button class="access-btn" id="accessBtn" onclick="attemptLogin()">Unlock Access</button>
-
+    <button onclick="attemptLogin()" id="accessBtn" style="width:100%;padding:16px;background:linear-gradient(135deg,#E8C49A,#C49A6C,#8B6040);color:#1a0e06;font-family:'Cinzel',serif;font-weight:700;font-size:0.95rem;letter-spacing:0.15em;border:none;border-radius:10px;cursor:pointer;box-sizing:border-box;">Unlock Access</button>
   </div>
-  <div class="vault-right">
-    <div class="vault-status" id="vaultStatus">LOCKED</div>
-    <div class="vault-perspective">
-      <div class="vault-interior">
-        <div class="interior-text" id="interiorText"><h3>ACCESS GRANTED</h3><p>INITIALIZING SESSION</p></div>
-      </div>
-      <div class="vault-door" id="vaultDoor">
-        <img class="vault-photo" id="vaultPhoto" src="" alt="MASSED Vault">
-        <div class="dial-overlay" id="dialOverlay"></div>
-      </div>
-    </div>
+  <div style="display:none;">
+    <div id="vaultStatus">LOCKED</div>
+    <div id="vaultDoor"></div>
+    <img id="vaultPhoto" src="">
+    <div id="dialOverlay"></div>
+    <div id="interiorText"></div>
   </div>
 </div>
 
@@ -617,8 +611,12 @@ const credentials={coordinator:{username:'Nicky2U',password:'Capri2026'},admin:{
 
 function setRole(r){
   currentRole=r;
-  document.getElementById('roleCoord').classList.toggle('active',r==='coordinator');
-  document.getElementById('roleAdmin').classList.toggle('active',r==='admin');
+  var coord=document.getElementById('roleCoord');
+  var admin=document.getElementById('roleAdmin');
+  var activeStyle='padding:14px;background:linear-gradient(135deg,rgba(196,154,108,0.25),rgba(196,154,108,0.1));color:#C49A6C;border:1px solid rgba(196,154,108,0.5);border-radius:6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;width:100%;';
+  var inactiveStyle='padding:14px;background:transparent;color:rgba(160,168,176,0.5);border:none;border-radius:6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;width:100%;';
+  coord.style.cssText=r==='coordinator'?activeStyle:inactiveStyle;
+  admin.style.cssText=r==='admin'?activeStyle:inactiveStyle;
   document.getElementById('formHeading').textContent=r==='coordinator'?'Coordinator Login':'Admin Login';
   document.getElementById('errorMsg').textContent='';
   document.getElementById('username').value='';document.getElementById('password').value='';
@@ -1540,4 +1538,17 @@ function doReset(){
   if(!nu||!np){showToast('✗ Please fill all fields','error');return;}
   if(np!==cp){showToast('✗ Passwords do not match','error');return;}
   credentials.coordinator.username=nu;credentials.coordinator.password=np;
-  closeModal();showToast('✓ Coordinator credent
+  closeModal();showToast('✓ Coordinator credentials reset','success');
+  showTab('reset',document.getElementById('nav-reset'));
+}
+
+// ===== TOAST =====
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
