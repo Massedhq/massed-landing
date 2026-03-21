@@ -810,7 +810,7 @@ function showTab(tab,el){
       <div class="filter-bar">
         <input class="filter-search" placeholder="Search by name, email or username…" oninput="filterPipeline(this.value)" id="pipeSearch">
         <select class="filter-sel" onchange="filterPipelineStatus(this.value)" id="statusFilter"><option value="">All</option><option value="active">Email Sent</option><option value="sent">Email Failed</option></select>
-        <button class="btn-ghost" onclick="loadRealSignups().then(()=>renderPipeline(performers))">🔄 Refresh</button>
+        <button class="btn-ghost" onclick="loadCreators().then(()=>renderPipeline(creators))">🔄 Refresh</button>
         <button class="btn-ghost" onclick="exportCSV()">Export CSV</button>
       </div>
       <div class="table-section">
