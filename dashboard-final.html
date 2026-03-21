@@ -990,30 +990,59 @@ function showTab(tab,el){
     </div>`;
 
   } else if(tab==='performance'){
+    const myCreators=performers.filter(p=>p.is_creator===true||p.is_creator==='true');
+    const totalClaims=myCreators.reduce((sum,p)=>sum+(p.claims||0),0);
+    const bestCreator=myCreators.sort((a,b)=>(b.claims||0)-(a.claims||0))[0];
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">My Performance</div><div class="page-sub">Your outreach and code statistics</div></div>
+    <div class="page-header"><div class="page-title">My Performance</div><div class="page-sub">Your creators and their referral performance</div></div>
     <div class="page-content">
-      <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-box"><div class="stat-box-label">Total Seats Generated</div><div class="stat-box-num">0</div><div class="stat-box-note">via your codes</div></div>
-        <div class="stat-box"><div class="stat-box-label">Conversion Rate</div><div class="stat-box-num">—</div><div class="stat-box-note">No data yet</div></div>
-        <div class="stat-box"><div class="stat-box-label">Best Code</div><div class="stat-box-num" style="font-size:1.1rem;">—</div><div class="stat-box-note">No data yet</div></div>
-        <div class="stat-box"><div class="stat-box-label">Active Creators</div><div class="stat-box-num">${performers.filter(p=>p.email_sent).length}</div><div class="stat-box-note">of ${performers.length} total</div></div>
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+        <div class="stat-box"><div class="stat-box-label">Total Referral Uses</div><div class="stat-box-num">${totalClaims}</div><div class="stat-box-note">across all creators</div></div>
+        <div class="stat-box"><div class="stat-box-label">Active Creators</div><div class="stat-box-num">${myCreators.length}</div><div class="stat-box-note">total added</div></div>
+        <div class="stat-box"><div class="stat-box-label">Top Creator</div><div class="stat-box-num" style="font-size:1rem;">${bestCreator?bestCreator.name:'—'}</div><div class="stat-box-note">${bestCreator?bestCreator.code+' · '+(bestCreator.claims||0)+' uses':'No data yet'}</div></div>
       </div>
-      <div class="perf-leaderboard">
-        <div class="table-section-header"><div class="table-section-title">Code Performance Leaderboard</div></div>
-        <table class="data-table"><thead><tr><th>#</th><th>Creator &amp; Code</th><th>Contact Method</th><th>Limit</th><th>Claims</th><th>Fill Rate</th></tr></thead><tbody>
-        ${performers.filter(p=>p.code).sort((a,b)=>b.claims-a.claims).map((p,i)=>{
-          const pct=Math.min(100,Math.round(p.claims/p.limit*100));
-          const remaining=p.limit-p.claims;
-          return `<tr>
-            <td><span class="perf-rank ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</span></td>
-            <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="code-link">${p.code}</div></div></div></td>
-            <td>${platChip(p.platform)}</td>
-            <td>${p.limit}</td><td>${p.claims}</td>
-            <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar-bg" style="width:100px"><div class="progress-bar-fill" style="width:${Math.min(100,pct)}%"></div></div><span style="font-size:0.78rem;color:${remaining<0?'var(--red)':'var(--text-dim)'}">${remaining}</span></div></td>
-          </tr>`;
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;">
+        ${myCreators.length===0?`<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-dim);background:#fff;border-radius:10px;border:1px solid var(--border);">No creators yet — add one using the <strong>Add Creator</strong> button.</div>`:''}
+        ${myCreators.map(p=>{
+          const pct=Math.min(100,Math.round((p.claims||0)/(p.limit||50)*100));
+          return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--rose);color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${p.initials||p.name.slice(0,2).toUpperCase()}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:800;font-size:0.95rem;color:#111;">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted" style="font-size:0.55rem;">TRUSTED SOURCE</span>':''}</div>
+                <div style="font-size:0.78rem;color:var(--text-dim);">${p.handle||'—'}</div>
+              </div>
+              <span class="badge ${p.email_sent?'badge-active':'badge-flagged'}" style="flex-shrink:0;">${p.email_sent?'Active':'Pending'}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="background:#f9fafb;border-radius:8px;padding:10px;">
+                <div style="font-size:0.6rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Platform</div>
+                <div style="font-size:0.82rem;font-weight:600;">Instagram</div>
+              </div>
+              <div style="background:#f9fafb;border-radius:8px;padding:10px;">
+                <div style="font-size:0.6rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Followers</div>
+                <div style="font-size:0.82rem;font-weight:600;">${p.audience&&p.audience!=='—'?p.audience:'—'}</div>
+              </div>
+              <div style="background:#f9fafb;border-radius:8px;padding:10px;">
+                <div style="font-size:0.6rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Referral Code</div>
+                <div style="font-size:0.82rem;font-weight:700;color:var(--gold);font-family:monospace;">${p.code&&p.code!=='—'?p.code:'—'}</div>
+              </div>
+              <div style="background:#f9fafb;border-radius:8px;padding:10px;">
+                <div style="font-size:0.6rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;">Code Uses</div>
+                <div style="font-size:0.82rem;font-weight:700;color:#111;">${p.claims||0} <span style="font-weight:400;color:var(--text-dim);">/ ${p.limit||50}</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-dim);margin-bottom:5px;"><span>Fill Rate</span><span>${pct}%</span></div>
+              <div style="height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;"><div style="height:100%;background:var(--gold);border-radius:3px;width:${pct}%;"></div></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="act-btn act-view" style="flex:1;padding:8px;" onclick="viewProfile(${p.id})">View Profile</button>
+              <button class="act-btn act-view" style="flex:1;padding:8px;" onclick="viewProfile(${p.id})">Edit Profile</button>
+              <button class="act-btn act-view" style="flex:1;padding:8px;" onclick="showToast('View Layout — coming soon')">View Layout</button>
+            </div>
+          </div>`;
         }).join('')}
-        </tbody></table>
       </div>
     </div>`;
 
@@ -1050,8 +1079,8 @@ function showTab(tab,el){
           <div class="note-form-card" style="flex:1;display:flex;flex-direction:column;padding:0;overflow:hidden;">
             <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
               <div>
-                <div style="font-weight:700;font-size:0.92rem;">💬 Message Coordinator</div>
-                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px;">Direct line to Coordinator</div>
+                <div style="font-weight:700;font-size:0.92rem;">💬 Message Administration</div>
+                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px;">Direct line to Admin</div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
                 <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>
@@ -1819,10 +1848,17 @@ function viewProfile(id){
           <div style="font-size:0.85rem;color:#374151;">${p.created_at?new Date(p.created_at).toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</div>
         </div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button onclick="document.getElementById('profile-overlay').remove();editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${p.email&&!p.email.includes('placeholder')?p.email:''}','${p.phone&&p.phone!=='—'?p.phone:''}','${p.code&&p.code!=='—'?p.code:''}')" style="flex:1;padding:10px;background:var(--rose);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">✏️ Edit</button>
-        ${loggedInRole==='admin'?`<button onclick="document.getElementById('profile-overlay').remove();toggleTrusted(${p.id},${p.trusted_source},document.createElement('button'))" style="flex:1;padding:10px;background:${p.trusted_source?'#fee2e2':'#dcfce7'};color:${p.trusted_source?'#dc2626':'#16a34a'};border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">${p.trusted_source?'🛡️ Revoke Trusted':'🛡️ Grant Trusted'}</button>`:''}
-        <button onclick="document.getElementById('profile-overlay').remove();resendEmail(${p.id},document.createElement('button'))" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">📧 Resend Email</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <button onclick="document.getElementById('profile-overlay').remove();editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${p.email&&!p.email.includes('placeholder')?p.email:''}','${p.phone&&p.phone!=='—'?p.phone:''}','${p.code&&p.code!=='—'?p.code:''}')" style="flex:1;padding:10px;background:var(--rose);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;">✏️ Edit Profile</button>
+        ${loggedInRole==='admin'?`<button onclick="document.getElementById('profile-overlay').remove();toggleTrusted(${p.id},${p.trusted_source},document.createElement('button'))" style="flex:1;padding:10px;background:${p.trusted_source?'#fee2e2':'#dcfce7'};color:${p.trusted_source?'#dc2626':'#16a34a'};border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;">${p.trusted_source?'🛡️ Revoke Trusted':'🛡️ Grant Trusted'}</button>`:''}
+        <button onclick="document.getElementById('profile-overlay').remove();resendEmail(${p.id},document.createElement('button'))" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;">📧 Resend Email</button>
+        <button onclick="showToast('View Layout — coming soon')" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;">🖼️ View Layout</button>
+      </div>
+      <div style="border-top:1px solid #f3f4f6;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="if(confirm('Suspend this profile? They will be temporarily restricted.'))showToast('⏸️ Profile suspended — coming soon')" style="flex:1;padding:9px;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">⏸️ Suspend</button>
+        <button onclick="if(confirm('Restore this profile?'))showToast('✅ Profile restored — coming soon')" style="flex:1;padding:9px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">✅ Restore</button>
+        <button onclick="if(confirm('Ban this profile? They will lose access permanently.'))showToast('🚫 Profile banned — coming soon')" style="flex:1;padding:9px;background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">🚫 Ban</button>
+        <button onclick="if(confirm('DELETE this profile? This cannot be undone.'))showToast('🗑️ Delete — coming soon')" style="flex:1;padding:9px;background:#fff1f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;">🗑️ Delete</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
