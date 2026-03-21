@@ -734,7 +734,7 @@ async function loadDashboard(){
   document.getElementById('sideAvatar').textContent=initials;
   document.getElementById('sideName').textContent=loggedInUser;
   document.getElementById('sideRole').textContent=isAdmin?'Admin':'Coordinator';
-  await Promise.all([loadRealSignups(), loadWaitlist()]);
+  await Promise.all([loadRealSignups(), loadCreators(), loadWaitlist()]);
   if(isAdmin){
     document.getElementById('adminSidebarSection').style.display='';
     showTab('admin-overview',document.getElementById('nav-admin-overview'));
