@@ -723,6 +723,28 @@ async function loadRealSignups(){
   }catch(e){console.error('Failed to load signups:',e);}
 }
 
+let creators=[];
+async function loadCreators(){
+  try{
+    const r=await fetch(API+'/api/creators');
+    const d=await r.json();
+    if(d.creators){
+      creators=d.creators.map(c=>({
+        id:c.id,
+        name:c.created_by,
+        handle:'@'+c.code.toLowerCase(),
+        code:c.code,
+        claims:c.use_count||0,
+        limit:c.use_limit||50,
+        active:c.active,
+        created_at:c.created_at,
+        color:'#C49A6C',
+        initials:c.created_by.slice(0,2).toUpperCase()
+      }));
+    }
+  }catch(e){console.error('Failed to load creators:',e);}
+}
+
 async function loadDashboard(){
   document.getElementById('dashboard-screen').classList.remove('hidden');
   const isAdmin=loggedInRole==='admin';
@@ -805,17 +827,16 @@ function showTab(tab,el){
 
   } else if(tab==='pipeline'){
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">Signups</div><div class="page-sub">Live signups from your pre-launch page</div></div>
+    <div class="page-header"><div class="page-title">Creator Pipeline</div><div class="page-sub">Creators and their referral codes</div></div>
     <div class="page-content">
       <div class="filter-bar">
-        <input class="filter-search" placeholder="Search by name, email or username…" oninput="filterPipeline(this.value)" id="pipeSearch">
-        <select class="filter-sel" onchange="filterPipelineStatus(this.value)" id="statusFilter"><option value="">All</option><option value="active">Email Sent</option><option value="sent">Email Failed</option></select>
+        <input class="filter-search" placeholder="Search by name or code…" oninput="filterPipeline(this.value)" id="pipeSearch">
         <button class="btn-ghost" onclick="loadCreators().then(()=>renderPipeline(creators))">🔄 Refresh</button>
         <button class="btn-ghost" onclick="exportCSV()">Export CSV</button>
       </div>
       <div class="table-section">
-        <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="pipelineCount">Loading…</div></div>
-        <table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Referral Code</th><th>Email Status</th><th>Position</th><th>Signed Up</th><th></th></tr></thead>
+        <div class="table-section-header"><div class="table-section-title">All Creators</div><div class="table-section-sub" id="pipelineCount">Loading…</div></div>
+        <table class="data-table"><thead><tr><th>Name</th><th>Referral Code</th><th>Uses</th><th>Limit</th><th>Status</th><th>Created</th><th></th></tr></thead>
         <tbody id="pipelineTbody"></tbody></table>
       </div>
     </div>`;
@@ -1456,19 +1477,17 @@ function sendMsg(){
 function renderPipeline(data){
   const tbody=document.getElementById('pipelineTbody');
   if(!tbody)return;
-  document.getElementById('pipelineCount').textContent=`${data.length} signups`;
-  tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically.</td></tr>`:
+  document.getElementById('pipelineCount').textContent=`${data.length} creators`;
+  tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No creators yet — add one using the Add Creator button.</td></tr>`:
   data.map(p=>`<tr>
-    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
-    <td style="font-size:0.78rem;color:var(--text-dim);">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</td>
-    <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
-    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code&&p.code!=='—'?p.code:'—'}</td>
-    <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Email Sent':'❌ Failed'}</span></td>
-    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
+    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div></div></div></td>
+    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code||'—'}</td>
+    <td style="font-size:0.78rem;color:var(--text-dim);">${p.claims||0}</td>
+    <td style="font-size:0.78rem;color:var(--text-dim);">${p.limit||50}</td>
+    <td><span class="badge ${p.active?'badge-active':'badge-flagged'}">${p.active?'✅ Active':'❌ Inactive'}</span></td>
     <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
     <td><div class="action-btns">
-      <button class="act-btn act-view" onclick="editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.email&&!p.email.includes('placeholder')?p.email:'')}','${p.phone||''}')">Edit</button>
-      <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
+      <button class="act-btn act-view" onclick="copyCode('${p.code}')">Copy Code</button>
     </div></td>
   </tr>`).join('');
 }
@@ -1495,8 +1514,9 @@ async function resendEmail(id, btn){
     btn.textContent='Resend';
   }
 }
-function filterPipeline(v){renderPipeline(performers.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||p.handle.toLowerCase().includes(v.toLowerCase())));}
-function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status===v||p.platform===v):performers);}
+function filterPipeline(v){renderPipeline(creators.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||p.code.toLowerCase().includes(v.toLowerCase())));}
+function filterPipelineStatus(v){renderPipeline(v?creators.filter(p=>p.status===v||p.platform===v):creators);}
+function copyCode(code){navigator.clipboard?.writeText(code).catch(()=>{});showToast('✓ Code copied: '+code,'success');}
  function editCreator(id, name, email, phone){
   const overlay=document.createElement('div');
 overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
