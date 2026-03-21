@@ -1023,7 +1023,7 @@ function showTab(tab,el){
             <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div style="font-weight:700;font-size:0.92rem;">💬 Message Coordinator</div>
-                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px;">Direct line to Admin</div>
+                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px;">Direct line to Coordinator</div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
                 <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>
@@ -1169,7 +1169,7 @@ function showTab(tab,el){
         </table>
       </div>
     </div>`;
-    renderAdminUsers(performers);
+    loadRealSignups().then(()=>renderAdminUsers(performers));
 
   } else if(tab==='admin-launch'){
     const creators=[
@@ -1477,8 +1477,9 @@ async function resendEmail(id, btn){
     const d=await r.json();
     if(d.success){
       showToast('✅ Email resent successfully','success');
-      await Promise.all([loadRealSignups(), loadWaitlist()]);
+      await loadRealSignups();
       renderPipeline(performers);
+      renderAdminUsers(performers);
     } else {
       showToast('❌ Failed: '+d.error,'error');
       btn.disabled=false;
@@ -1500,11 +1501,51 @@ function selectContact(k){
   const el=document.getElementById('co-'+k);
   if(el)el.classList.add('selected');
 }
-function addCreator(){
+async function addCreator(){
   const name=document.getElementById('addName')?.value.trim();
+  const handle=document.getElementById('addHandle')?.value.trim()||'';
+  const email=document.getElementById('addEmail')?.value.trim()||'';
+  const notes=document.getElementById('addNotes')?.value.trim()||'';
   if(!name){showToast('✗ Please enter a creator name','error');return;}
-  showToast(`✓ ${name} added & code assigned`,'success');
-  showTab('pipeline',document.getElementById('nav-pipeline'));
+  if(!selectedContact){showToast('✗ Please select how they were contacted','error');return;}
+
+  const username=(handle||name).replace('@','').toLowerCase().replace(/\s/g,'').slice(0,20);
+  const clean=username.toUpperCase().slice(0,8);
+  const code='MASSED-'+clean+'-'+Math.floor(1000+Math.random()*9000);
+
+  const btn=document.querySelector('.btn-add-assign');
+  btn.disabled=true;btn.textContent='Saving…';
+
+  try{
+    const r=await fetch(API+'/api/signup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        full_name:name,
+        email:email||username+'@placeholder.com',
+        phone:'',
+        username:username,
+        referral_code:code
+      })
+    });
+    const d=await r.json();
+    if(d.success||d.waitlist_pos){
+      showToast('✓ '+name+' added & code '+code+' assigned','success');
+      document.getElementById('addName').value='';
+      document.getElementById('addHandle').value='';
+      document.getElementById('addEmail').value='';
+      if(document.getElementById('addNotes'))document.getElementById('addNotes').value='';
+      selectedContact=null;
+      document.querySelectorAll('.contact-option').forEach(el=>el.classList.remove('selected'));
+      await loadRealSignups();
+      showTab('pipeline',document.getElementById('nav-pipeline'));
+    } else {
+      showToast('✗ '+(d.error||'Failed to save'),'error');
+    }
+  } catch(e){
+    showToast('✗ Connection error','error');
+  }
+  btn.disabled=false;btn.textContent='Add Creator & Assign Code →';
 }
 
 // ===== CODE GENERATORS =====
