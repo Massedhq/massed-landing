@@ -1540,19 +1540,6 @@ function saveEditCreator(id){
   .catch(()=>showToast('✗ Connection error','error'));
 }
 
-  fetch(API+'/api/update-creator', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id, full_name:newName, email:newEmail, phone:newPhone})
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.success){ showToast('✓ Creator updated','success'); loadRealSignups().then(()=>renderPipeline(performers)); }
-    else showToast('✗ '+(d.error||'Failed'),'error');
-  })
-  .catch(()=>showToast('✗ Connection error','error'));
-}
-
 // ===== ADD CREATOR =====
 function selectContact(k){
   selectedContact=k;
