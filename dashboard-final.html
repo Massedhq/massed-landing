@@ -827,20 +827,21 @@ function showTab(tab,el){
 
   } else if(tab==='pipeline'){
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">Creator Pipeline</div><div class="page-sub">Creators and their referral codes</div></div>
+    <div class="page-header"><div class="page-title">Creator Pipeline</div><div class="page-sub">Live signups from your pre-launch page</div></div>
     <div class="page-content">
       <div class="filter-bar">
-        <input class="filter-search" placeholder="Search by name or code…" oninput="filterPipeline(this.value)" id="pipeSearch">
-        <button class="btn-ghost" onclick="loadCreators().then(()=>renderPipeline(creators))">🔄 Refresh</button>
+        <input class="filter-search" placeholder="Search by name, email or username…" oninput="filterPipeline(this.value)" id="pipeSearch">
+        <select class="filter-sel" onchange="filterPipelineStatus(this.value)" id="statusFilter"><option value="">All</option><option value="active">Email Sent</option><option value="sent">Email Failed</option></select>
+        <button class="btn-ghost" onclick="loadRealSignups().then(()=>renderPipeline(performers))">🔄 Refresh</button>
         <button class="btn-ghost" onclick="exportCSV()">Export CSV</button>
       </div>
       <div class="table-section">
-        <div class="table-section-header"><div class="table-section-title">All Creators</div><div class="table-section-sub" id="pipelineCount">Loading…</div></div>
-        <table class="data-table"><thead><tr><th>Name</th><th>Referral Code</th><th>Uses</th><th>Limit</th><th>Status</th><th>Created</th><th></th></tr></thead>
+        <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="pipelineCount">Loading…</div></div>
+        <table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Referral Code</th><th>Email Status</th><th>Position</th><th>Signed Up</th><th></th></tr></thead>
         <tbody id="pipelineTbody"></tbody></table>
       </div>
     </div>`;
-    renderPipeline(creators);
+    renderPipeline(performers);
 
   } else if(tab==='outreach'){
     main.innerHTML=`
@@ -1179,13 +1180,14 @@ function showTab(tab,el){
       <div class="filter-bar">
         <input class="filter-search" placeholder="🔍 Search by name, email or username…" oninput="filterAdminUsers(this.value)" id="adminUserSearch">
         <select class="filter-sel" onchange="filterAdminUserStatus(this.value)"><option value="">All Status</option><option value="sent">Email Sent</option><option value="failed">Email Failed</option></select>
+        <select class="filter-sel" onchange="filterAdminUserType(this.value)"><option value="">All Types</option><option value="creator">Creators</option><option value="signup">Public Signups</option></select>
         <button class="btn-ghost" onclick="loadRealSignups().then(()=>renderAdminUsers(performers))">🔄 Refresh</button>
         <button class="btn-ghost" onclick="exportSignupsCSV()">📥 Export CSV</button>
       </div>
       <div class="table-section">
         <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="adminUserCount">${performers.length} total</div></div>
         <table class="data-table" style="min-width:700px;">
-          <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Username</th><th>Referral Code</th><th>Email Status</th><th>Signed Up</th><th>Actions</th></tr></thead>
+          <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Username</th><th>Referral Code</th><th>Type</th><th>Email Status</th><th>Signed Up</th><th>Actions</th></tr></thead>
           <tbody id="adminUsersTbody"></tbody>
         </table>
       </div>
@@ -1477,17 +1479,19 @@ function sendMsg(){
 function renderPipeline(data){
   const tbody=document.getElementById('pipelineTbody');
   if(!tbody)return;
-  document.getElementById('pipelineCount').textContent=`${data.length} creators`;
-  tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No creators yet — add one using the Add Creator button.</td></tr>`:
+  document.getElementById('pipelineCount').textContent=`${data.length} signups`;
+  tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically.</td></tr>`:
   data.map(p=>`<tr>
-    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div></div></div></td>
-    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code||'—'}</td>
-    <td style="font-size:0.78rem;color:var(--text-dim);">${p.claims||0}</td>
-    <td style="font-size:0.78rem;color:var(--text-dim);">${p.limit||50}</td>
-    <td><span class="badge ${p.active?'badge-active':'badge-flagged'}">${p.active?'✅ Active':'❌ Inactive'}</span></td>
+    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
+    <td style="font-size:0.78rem;color:var(--text-dim);">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</td>
+    <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
+    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code&&p.code!=='—'?p.code:'—'}</td>
+    <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Email Sent':'❌ Failed'}</span></td>
+    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
     <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
     <td><div class="action-btns">
-      <button class="act-btn act-view" onclick="copyCode('${p.code}')">Copy Code</button>
+      <button class="act-btn act-view" onclick="editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.email&&!p.email.includes('placeholder')?p.email:'')}','${p.phone||''}')">Edit</button>
+      <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
     </div></td>
   </tr>`).join('');
 }
@@ -1514,8 +1518,8 @@ async function resendEmail(id, btn){
     btn.textContent='Resend';
   }
 }
-function filterPipeline(v){renderPipeline(creators.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||p.code.toLowerCase().includes(v.toLowerCase())));}
-function filterPipelineStatus(v){renderPipeline(v?creators.filter(p=>p.status===v||p.platform===v):creators);}
+function filterPipeline(v){renderPipeline(performers.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||(p.handle&&p.handle.toLowerCase().includes(v.toLowerCase()))));}
+function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status===v||p.platform===v):performers);}
 function copyCode(code){navigator.clipboard?.writeText(code).catch(()=>{});showToast('✓ Code copied: '+code,'success');}
  function editCreator(id, name, email, phone){
   const overlay=document.createElement('div');
@@ -1682,21 +1686,24 @@ function renderAdminUsers(data){
   if(!tbody)return;
   if(document.getElementById('adminUserCount'))document.getElementById('adminUserCount').textContent=data.length+' total';
   tbody.innerHTML=data.length===0
-    ?'<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically once your landing page receives submissions.</td></tr>'
-    :data.map(p=>`<tr>
+    ?'<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically once your landing page receives submissions.</td></tr>'
+    :data.map(p=>{
+      const isCreator=/^M\d+D$/.test(p.code);
+      return `<tr>
       <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
       <td><div style="font-weight:700;font-size:0.83rem;">${p.name}</div></td>
       <td style="font-size:0.78rem;color:var(--text-dim);">${p.email||'—'}</td>
       <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
       <td style="font-size:0.78rem;color:var(--gold);font-family:monospace;">@${p.handle?p.handle.replace('@',''):'—'}</td>
       <td style="font-size:0.75rem;color:var(--text-dim);">${p.code&&p.code!=='—'?p.code:'—'}</td>
+      <td><span class="badge ${isCreator?'badge-responded':'badge-active'}">${isCreator?'Creator':'Public Signup'}</span></td>
       <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Sent':'❌ Failed'}</span></td>
       <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'-'}</td>
       <td><div class="action-btns">
-        ${p.email_sent?'':'<button class="act-btn act-view" onclick="resendEmail('+p.id+',this)">Resend</button>'}
+        <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
         <button class="act-btn act-delete" onclick="showToast('Delete coming soon')">Delete</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`;}).join('');
 }
 
 function filterAdminUsers(v){
@@ -1709,6 +1716,13 @@ function filterAdminUsers(v){
 function filterAdminUserStatus(v){
   if(!v)return renderAdminUsers(performers);
   renderAdminUsers(performers.filter(p=>v==='sent'?p.email_sent:!p.email_sent));
+}
+function filterAdminUserType(v){
+  if(!v)return renderAdminUsers(performers);
+  renderAdminUsers(performers.filter(p=>{
+    const isCreator=/^M\d+D$/.test(p.code);
+    return v==='creator'?isCreator:!isCreator;
+  }));
 }
 
 // ===== ADMIN RESET =====
