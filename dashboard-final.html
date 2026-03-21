@@ -928,10 +928,10 @@ function showTab(tab,el){
 
   } else if(tab==='gencode'){
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create referral codes for Admin, Coordinators, or Creators</div></div>
+    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create referral codes for creators</div></div>
     <div class="page-content">
 
-      <div class="gen-grid" style="margin-bottom:20px;">
+      ${loggedInRole==='admin'?`<div class="gen-grid" style="margin-bottom:20px;">
         <div class="gen-card" style="border:2px solid rgba(220,38,38,0.3);background:rgba(220,38,38,0.03);">
           <div class="gen-card-title" style="color:#ef4444;">🛡️ Admin Personal Code</div>
           <div class="gen-card-sub">Generate a referral code for yourself (Admin)</div>
@@ -956,7 +956,7 @@ function showTab(tab,el){
             <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('coordCodeValue').textContent);showToast('✅ Copied!','success')">Copy</button>
           </div>
         </div>
-      </div>
+      </div>`:''}
 
       <div class="gen-grid">
         <div class="gen-card">
