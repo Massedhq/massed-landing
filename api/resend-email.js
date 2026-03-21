@@ -14,10 +14,10 @@ module.exports = async function handler(req, res) {
   if (!signup_id) return res.status(400).json({ error: 'signup_id required' });
 
   try {
-    const result = await sql`SELECT id, full_name, email, username, waitlist_pos, referral_code FROM signups WHERE id=${signup_id} LIMIT 1`;
+    const result = await sql`SELECT id, full_name, email, username, waitlist_pos FROM signups WHERE id=${signup_id} LIMIT 1`;
     if (!result.rows.length) return res.status(404).json({ error: 'Signup not found' });
 
-    const { full_name, email, username, waitlist_pos, referral_code } = result.rows[0];
+    const { full_name, email, username, waitlist_pos } = result.rows[0];
     const spotsLeft = 48000 - waitlist_pos;
     const FROM = process.env.FROM_EMAIL || 'hello@massed.io';
 
@@ -35,11 +35,6 @@ module.exports = async function handler(req, res) {
           <div style="background:rgba(196,154,108,0.08);border:1px solid rgba(196,154,108,0.25);border-radius:10px;padding:20px;text-align:center;">
             <p style="color:#C49A6C;font-size:1.4rem;font-weight:700;margin:0;">massed.io/${username}</p>
           </div>
-          ${referral_code ? `
-          <div style="background:rgba(196,154,108,0.08);border:1px solid rgba(196,154,108,0.25);border-radius:10px;padding:20px;text-align:center;margin-top:16px;">
-            <p style="color:#A0A8B0;font-size:0.85rem;margin:0 0 6px;letter-spacing:0.1em;">YOUR REFERRAL CODE</p>
-            <p style="color:#C49A6C;font-size:1.4rem;font-weight:700;margin:0;">${referral_code}</p>
-          </div>` : ''}
           <p style="color:#A0A8B0;margin-top:20px;">Position: #${waitlist_pos} · ${spotsLeft.toLocaleString()} spots remaining</p>
         </div>
       </div>`
