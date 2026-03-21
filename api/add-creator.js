@@ -32,8 +32,8 @@ module.exports = async function handler(req, res) {
     const finalEmail = email || finalUsername+'@placeholder.com';
 
     await pool.query(
-      'INSERT INTO signups (full_name, email, phone, username, referral_code, waitlist_pos, email_sent, is_creator, trusted_source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-[full_name, finalEmail.toLowerCase(), phone||null, finalUsername, code.toUpperCase(), waitlist_pos, false, true, true]
+      'INSERT INTO signups (full_name, email, phone, username, referral_code, waitlist_pos, email_sent, is_creator, trusted_source, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+      [full_name, finalEmail.toLowerCase(), phone||null, finalUsername, code.toUpperCase(), waitlist_pos, false, true, true, created_by]
     );
 
     // Send creator email if real email provided
