@@ -365,15 +365,12 @@ const API = 'https://massed-landing.vercel.app';
         try {
           const r = await fetch(`${API}/api/check-username?username=${encodeURIComponent(val)}`);
           const d = await r.json();
-          let status = document.getElementById('massed-username-status');
-          if (!status) {
-            status = document.createElement('div');
-            status.id = 'massed-username-status';
-            status.style.cssText = 'font-size:0.78rem;margin-top:4px;padding:0 4px;';
-            usernameInput.parentNode.insertAdjacentElement('afterend', status);
+          let status = document.getElementById('username-status');
+          if (status) {
+            status.style.display = '';
+            status.textContent = (d.available ? '✓ Available!' : '✗ Username already taken');
+            status.style.color = d.available ? '#16a34a' : '#ef4444';
           }
-          status.textContent = d.message;
-          status.style.color = d.available ? '#16a34a' : '#ef4444';
         } catch(e) {}
       }, 500);
     });
