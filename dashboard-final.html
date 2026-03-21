@@ -203,6 +203,8 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .badge-responded{background:var(--blue-bg);color:var(--blue);}
 .badge-noreply{background:#f3f4f6;color:var(--text-dim);}
 .badge-flagged{background:var(--red-bg);color:var(--red);}
+.badge-trusted{background:linear-gradient(135deg,#1a1208,#2a1e0a);border:1px solid rgba(196,154,108,0.5);color:#C49A6C;font-size:0.62rem;font-weight:800;letter-spacing:0.08em;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;}
+.badge-trusted::before{content:'🛡️';font-size:0.7rem;background:none;width:auto;height:auto;border-radius:0;}
 
 /* Platform chips */
 .platform-chip{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;}
@@ -717,7 +719,8 @@ async function loadRealSignups(){
         waitlist_pos:s.waitlist_pos,
         email_sent:s.email_sent,
         email_sent_at:s.email_sent_at,
-        created_at:s.created_at
+        created_at:s.created_at,
+        trusted_source:s.trusted_source||false
       }));
     }
   }catch(e){console.error('Failed to load signups:',e);}
@@ -1483,7 +1486,7 @@ function renderPipeline(data){
   document.getElementById('pipelineCount').textContent=`${data.length} signups`;
   tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically.</td></tr>`:
   data.map(p=>`<tr>
-    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
+    <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted">TRUSTED SOURCE</span>':''}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
     <td style="font-size:0.78rem;color:var(--text-dim);">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</td>
     <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
     <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code&&p.code!=='—'?p.code:'—'}</td>
@@ -1697,7 +1700,7 @@ function renderAdminUsers(data){
       const isCreator=/^M\d+D$/.test(p.code);
       return `<tr>
       <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
-      <td><div style="font-weight:700;font-size:0.83rem;">${p.name}</div></td>
+      <td><div style="font-weight:700;font-size:0.83rem;">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted">TRUSTED SOURCE</span>':''}</div></td>
       <td style="font-size:0.78rem;color:var(--text-dim);">${p.email||'—'}</td>
       <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
       <td style="font-size:0.78rem;color:var(--gold);font-family:monospace;">@${p.handle?p.handle.replace('@',''):'—'}</td>
@@ -1706,6 +1709,7 @@ function renderAdminUsers(data){
       <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Sent':'❌ Failed'}</span></td>
       <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'-'}</td>
       <td><div class="action-btns">
+        ${loggedInRole==='admin'?`<button class="act-btn ${p.trusted_source?'act-delete':'act-view'}" onclick="toggleTrusted(${p.id},${p.trusted_source},this)">${p.trusted_source?'Revoke Trusted':'Grant Trusted'}</button>`:''}
         <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
         <button class="act-btn act-delete" onclick="showToast('Delete coming soon')">Delete</button>
       </div></td>
@@ -1729,6 +1733,33 @@ function filterAdminUserType(v){
     const isCreator=/^M\d+D$/.test(p.code);
     return v==='creator'?isCreator:!isCreator;
   }));
+}
+
+async function toggleTrusted(id, currentStatus, btn){
+  btn.disabled=true;
+  btn.textContent='Updating…';
+  try{
+    const r=await fetch('https://massed-landing.vercel.app/api/toggle-trusted',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id, trusted_source:!currentStatus})
+    });
+    const d=await r.json();
+    if(d.success){
+      showToast(currentStatus?'✓ Trusted Source badge revoked':'✓ Trusted Source badge granted','success');
+      await loadRealSignups();
+      renderAdminUsers(performers);
+      renderPipeline(performers);
+    } else {
+      showToast('✗ '+(d.error||'Failed'),'error');
+      btn.disabled=false;
+      btn.textContent=currentStatus?'Revoke Trusted':'Grant Trusted';
+    }
+  }catch(e){
+    showToast('✗ Connection error','error');
+    btn.disabled=false;
+    btn.textContent=currentStatus?'Revoke Trusted':'Grant Trusted';
+  }
 }
 
 // ===== ADMIN RESET =====
