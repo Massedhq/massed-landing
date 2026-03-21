@@ -1466,7 +1466,10 @@ function renderPipeline(data){
     <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Email Sent':'❌ Failed'}</span></td>
     <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
     <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
-    <td>${p.email_sent?'':'<button class="act-btn act-view" onclick="resendEmail('+p.id+',this)">Resend</button>'}</td>
+    <td><div class="action-btns">
+      <button class="act-btn act-view" onclick="editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.email&&!p.email.includes('placeholder')?p.email:'')}','${p.phone||''}')">Edit</button>
+      ${p.email_sent?'':'<button class="act-btn act-view" onclick="resendEmail('+p.id+',this)">Resend</button>'}
+    </div></td>
   </tr>`).join('');
 }
 
@@ -1494,6 +1497,26 @@ async function resendEmail(id, btn){
 }
 function filterPipeline(v){renderPipeline(performers.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||p.handle.toLowerCase().includes(v.toLowerCase())));}
 function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status===v||p.platform===v):performers);}
+  function editCreator(id, name, email, phone){
+  const newName=prompt('Full name:', name);
+  if(newName===null) return;
+  const newEmail=prompt('Email:', email);
+  if(newEmail===null) return;
+  const newPhone=prompt('Phone:', phone);
+  if(newPhone===null) return;
+
+  fetch(API+'/api/update-creator', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id, full_name:newName, email:newEmail, phone:newPhone})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.success){ showToast('✓ Creator updated','success'); loadRealSignups().then(()=>renderPipeline(performers)); }
+    else showToast('✗ '+(d.error||'Failed'),'error');
+  })
+  .catch(()=>showToast('✗ Connection error','error'));
+}
 
 // ===== ADD CREATOR =====
 function selectContact(k){
