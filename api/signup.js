@@ -70,17 +70,17 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'A referral code is required to join.' });
     }
 
-    const adminCodes = ['MASSED-ADMIN', 'MASSED-COORDINATOR'];
-    if (!adminCodes.includes(finalReferral.toUpperCase())) {
-      const validRef = await pool.query(
-        'SELECT id FROM signups WHERE UPPER(referral_code)=UPPER($1) LIMIT 1',
-        [finalReferral]
-      );
-      if (!validRef.rows.length) {
-        await pool.end();
-        return res.status(400).json({ error: 'Invalid referral code. Please check and try again.' });
-      }
-    }
+   const isAdminCode = /^M\d+D$/.test(finalReferral) || ['MASSED-ADMIN','MASSED-COORDINATOR'].includes(finalReferral.toUpperCase());
+if (!isAdminCode) {
+  const validRef = await pool.query(
+    'SELECT id FROM signups WHERE UPPER(referral_code)=UPPER($1) LIMIT 1',
+    [finalReferral]
+  );
+  if (!validRef.rows.length) {
+    await pool.end();
+    return res.status(400).json({ error: 'Invalid referral code. Please check and try again.' });
+  }
+}
 
     // Get waitlist position
     const countRes = await pool.query('SELECT COUNT(*) as count FROM signups');
