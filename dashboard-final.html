@@ -606,6 +606,18 @@ document.getElementById('vaultPhoto').src = 'data:image/png;base64,/9j/4AAQSkZJR
 
 // ===== AUTH =====
 let currentRole='coordinator', loggedInRole=null, loggedInUser=null, animating=false;
+
+// Restore session on page refresh
+window.addEventListener('DOMContentLoaded', function(){
+  const savedRole = sessionStorage.getItem('massedRole');
+  const savedUser = sessionStorage.getItem('massedUser');
+  if(savedRole && savedUser){
+    loggedInRole = savedRole;
+    loggedInUser = savedUser;
+    document.getElementById('vault-screen').classList.add('hidden');
+    loadDashboard();
+  }
+});
 const credentials={coordinator:{username:'Nicky2U',password:'Capri2026'},admin:{username:'AvyAdore',password:'Taurusme2026'}};
 
 function setRole(r){
@@ -622,7 +634,7 @@ function togglePw(){const p=document.getElementById('password'),i=document.getEl
 function attemptLogin(){
   if(animating)return;
   const user=document.getElementById('username').value.trim(),pass=document.getElementById('password').value,err=document.getElementById('errorMsg'),creds=credentials[currentRole];
-  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;triggerVaultOpen();}
+  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;sessionStorage.setItem('massedRole',currentRole);sessionStorage.setItem('massedUser',user);triggerVaultOpen();}
   else{err.textContent='✗  Invalid credentials.';document.getElementById('password').value='';setTimeout(()=>err.textContent='',4000);}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('vault-screen').classList.contains('hidden'))attemptLogin();});
@@ -639,7 +651,7 @@ function triggerVaultOpen(){
 }
 
 function logout(){
-  loggedInRole=null;loggedInUser=null;animating=false;
+  loggedInRole=null;loggedInUser=null;animating=false;sessionStorage.removeItem('massedRole');sessionStorage.removeItem('massedUser');
   const door=document.getElementById('vaultDoor'),dial=document.getElementById('dialOverlay'),statusEl=document.getElementById('vaultStatus'),btn=document.getElementById('accessBtn');
   door.style.transition='none';door.classList.remove('open');dial.classList.remove('spinning');document.getElementById('interiorText').classList.remove('show');
   setTimeout(()=>door.style.transition='',50);
