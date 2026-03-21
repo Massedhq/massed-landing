@@ -784,18 +784,19 @@ function showTab(tab,el){
   const main=document.getElementById('mainArea');
 
   if(tab==='dashboard'){
-    const totalSignups=performers.length;
-    const emailSent=performers.filter(p=>p.email_sent).length;
-    const emailFailed=performers.filter(p=>!p.email_sent).length;
+    const myCreators=performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser));
+    const totalSignups=loggedInRole==='admin'?performers.length:myCreators.length;
+    const emailSent=myCreators.filter(p=>p.email_sent).length;
+    const emailFailed=myCreators.filter(p=>!p.email_sent).length;
     const today=new Date().toDateString();
-    const todaySignups=performers.filter(p=>new Date(p.created_at).toDateString()===today).length;
+    const todaySignups=myCreators.filter(p=>new Date(p.created_at).toDateString()===today).length;
     main.innerHTML=`
     <div class="page-header"><div class="page-title">Dashboard</div><div class="page-sub">${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · Pre-Launch Active</div></div>
     <div class="page-content">
       <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num">${totalSignups}</div><div class="stat-box-note up">${todaySignups} today</div></div>
+        <div class="stat-box"><div class="stat-box-label">${loggedInRole==='admin'?'Total Signups':'My Creators'}</div><div class="stat-box-num">${myCreators.length}</div><div class="stat-box-note up">${todaySignups} today</div></div>
         <div class="stat-box"><div class="stat-box-label">Emails Sent</div><div class="stat-box-num" style="color:var(--green)">${emailSent}</div><div class="stat-box-note up">✅ Confirmed</div></div>
-        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num">${(48000-totalSignups).toLocaleString()}</div><div class="stat-box-note">of 48,000</div></div>
+        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num">${(48000-performers.length).toLocaleString()}</div><div class="stat-box-note">of 48,000</div></div>
         <div class="stat-box"><div class="stat-box-label">Email Failed</div><div class="stat-box-num" style="color:${emailFailed>0?'var(--red)':'var(--green)'}">${emailFailed}</div><div class="stat-box-note ${emailFailed>0?'warn':''}">${emailFailed>0?'Needs resend':'All good'}</div></div>
       </div>
       <div class="dash-grid">
@@ -803,12 +804,13 @@ function showTab(tab,el){
           <div class="table-section">
             <div class="table-section-header"><div><div class="table-section-title">Creator Pipeline</div><div class="table-section-sub">Latest activity</div></div><span class="view-all-link" onclick="showTab('pipeline',document.getElementById('nav-pipeline'))">View all →</span></div>
             <table class="data-table"><thead><tr><th>Creator</th><th>Contacted Via</th><th>Status</th><th>Code</th><th>Claims</th><th></th></tr></thead><tbody>
-            ${performers.slice(0,5).map(p=>`<tr>
-              <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
+            ${myCreators.length===0?`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-dim);">No creators yet — add one using + Add Creator</td></tr>`:''}
+            ${myCreators.slice(0,5).map(p=>`<tr>
+              <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted" style="font-size:0.55rem;">TRUSTED</span>':''}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
               <td>${platChip(p.platform)}</td><td>${statusBadge(p.status)}</td>
-              <td>${p.code?`<span class="code-link">${p.code.replace('MASSED-','')}</span>`:'—'}</td>
-              <td>${p.claims!=null?p.claims:'—'}</td>
-              <td><button class="arrow-btn">→</button></td>
+              <td>${p.code&&p.code!=='—'?`<span class="code-link">${p.code}</span>`:'—'}</td>
+              <td>${p.claims!=null?p.claims:'0'}</td>
+              <td><button class="arrow-btn" onclick="viewProfile(${p.id})">→</button></td>
             </tr>`).join('')}
             </tbody></table>
           </div>
@@ -816,16 +818,14 @@ function showTab(tab,el){
         <div style="display:flex;flex-direction:column;gap:16px;">
           <div class="seats-widget">
             <div class="seats-widget-label">Global Seats Remaining</div>
-            <div class="seats-num">${(48000-totalSignups).toLocaleString()}</div>
-            <div class="seats-sub">of 48,000 · ${totalSignups.toLocaleString()} claimed</div>
-            <div class="seats-bar-bg"><div class="seats-bar-fill" style="width:${Math.min(100,Math.round(totalSignups/48000*100))}%"></div></div>
-            <div class="seats-pct"><span>${Math.round(totalSignups/48000*100)}% filled</span><span>Live data</span></div>
+            <div class="seats-num">${(48000-performers.length).toLocaleString()}</div>
+            <div class="seats-sub">of 48,000 · ${performers.length.toLocaleString()} claimed</div>
+            <div class="seats-bar-bg"><div class="seats-bar-fill" style="width:${Math.min(100,Math.round(performers.length/48000*100))}%"></div></div>
+            <div class="seats-pct"><span>${Math.round(performers.length/48000*100)}% filled</span><span>Live data</span></div>
           </div>
           <div class="live-activity">
             <h4>Live Activity</h4>
             <div class="live-item"><div class="live-dot g"></div><div><div class="live-text">No recent activity</div><div class="live-time">—</div></div></div>
-            <div class="live-item"><div class="live-dot a"></div><div><div class="live-text">Code <b>TARA-7204</b> hit 29/50</div><div class="live-time">2 hrs ago</div></div></div>
-
           </div>
         </div>
       </div>
