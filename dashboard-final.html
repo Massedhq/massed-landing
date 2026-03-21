@@ -815,7 +815,7 @@ function showTab(tab,el){
       </div>
       <div class="table-section">
         <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="pipelineCount">Loading…</div></div>
-        <table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Email Status</th><th>Position</th><th>Signed Up</th><th></th></tr></thead>
+        <table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Referral Code</th><th>Email Status</th><th>Position</th><th>Signed Up</th><th></th></tr></thead>
         <tbody id="pipelineTbody"></tbody></table>
       </div>
     </div>`;
@@ -1460,8 +1460,9 @@ function renderPipeline(data){
   tbody.innerHTML=data.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically.</td></tr>`:
   data.map(p=>`<tr>
     <td><div class="creator-cell">${creatorAv(p)}<div><div class="creator-info-name">${p.name}</div><div class="creator-info-handle">${p.handle}</div></div></div></td>
-    <td style="font-size:0.78rem;color:var(--text-dim);">${p.email||'—'}</td>
+    <td style="font-size:0.78rem;color:var(--text-dim);">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</td>
     <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
+    <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${p.code&&p.code!=='—'?p.code:'—'}</td>
     <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Email Sent':'❌ Failed'}</span></td>
     <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
     <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
