@@ -268,9 +268,23 @@
       });
       const data = await res.json();
       if (res.ok) {
-        btn.textContent = '✓ Spot Secured!';
-        btn.style.background = '#4caf50';
-        document.querySelector('.spots-row').textContent = 'Check your email for confirmation!';
+        hideFormError();
+        const formCard = document.querySelector('.form-card');
+        if(formCard){
+          formCard.innerHTML = `
+            <div style="text-align:center;padding:20px;">
+              <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+              <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:8px;">You're locked in!</h2>
+              <p style="margin-bottom:16px;opacity:0.8;">Your username has been reserved.</p>
+              <div style="background:rgba(196,154,108,0.1);border:1px solid rgba(196,154,108,0.3);border-radius:10px;padding:16px;margin-bottom:16px;">
+                <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">Your Reserved Link</div>
+                <div style="font-size:1.2rem;font-weight:700;color:#C49A6C;">massed.io/${data.username||username}</div>
+              </div>
+              <div style="font-size:1.8rem;font-weight:900;color:#C49A6C;">#${data.waitlist_pos||''}</div>
+              <div style="font-size:0.82rem;opacity:0.6;">${(data.spots_remaining||'').toLocaleString()} spots remaining</div>
+            </div>
+          `;
+        }
       } else {
         btn.textContent = 'Secure My Spot';
         btn.disabled = false;
@@ -420,20 +434,23 @@ function hideFormError(){
         btn.textContent = originalText;
         return;
       }
-      const form = btn.closest('form') || btn.closest('div') || btn.parentNode;
-      form.innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
-          <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:8px;">You're locked in!</h2>
-          <p style="margin-bottom:16px;opacity:0.8;">Your username has been reserved.</p>
-          <div style="background:rgba(196,154,108,0.1);border:1px solid rgba(196,154,108,0.3);border-radius:10px;padding:16px;margin-bottom:16px;">
-            <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">Your Reserved Link</div>
-            <div style="font-size:1.2rem;font-weight:700;color:#C49A6C;">massed.io/${data.username}</div>
+      hideFormError();
+      const formCard = document.querySelector('.form-card');
+      if(formCard){
+        formCard.innerHTML = `
+          <div style="text-align:center;padding:20px;">
+            <div style="font-size:3rem;margin-bottom:12px;">🔐</div>
+            <h2 style="font-size:1.4rem;font-weight:900;margin-bottom:8px;">You're locked in!</h2>
+            <p style="margin-bottom:16px;opacity:0.8;">Your username has been reserved.</p>
+            <div style="background:rgba(196,154,108,0.1);border:1px solid rgba(196,154,108,0.3);border-radius:10px;padding:16px;margin-bottom:16px;">
+              <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0.6;margin-bottom:6px;">Your Reserved Link</div>
+              <div style="font-size:1.2rem;font-weight:700;color:#C49A6C;">massed.io/${data.username}</div>
+            </div>
+            <div style="font-size:1.8rem;font-weight:900;color:#C49A6C;">#${data.waitlist_pos}</div>
+            <div style="font-size:0.82rem;opacity:0.6;">${data.spots_remaining?.toLocaleString()} spots remaining</div>
           </div>
-          <div style="font-size:1.8rem;font-weight:900;color:#C49A6C;">#${data.waitlist_pos}</div>
-          <div style="font-size:0.82rem;opacity:0.6;">${data.spots_remaining?.toLocaleString()} spots remaining</div>
-        </div>
-      `;
+        `;
+      }
     } catch(err) {
       showFormError('Connection error. Please try again.');
       btn.disabled = false;
