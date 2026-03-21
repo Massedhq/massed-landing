@@ -1565,17 +1565,15 @@ async function addCreator(){
   btn.disabled=true;btn.textContent='Saving…';
 
   try{
-    const r=await fetch(API+'/api/add-creator',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        full_name:name,
-        email:email||username+'@placeholder.com',
-        phone:'',
-        username:username,
-        referral_code: code
-      })
-    });
+   const r=await fetch(API+'/api/add-creator',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+    full_name:name,
+    code:code,
+    created_by:loggedInRole==='admin'?'Admin':'Coordinator'
+  })
+});
     const d=await r.json();
     if(d.success||d.waitlist_pos){
       showToast('✓ '+name+' added & code '+code+' assigned','success');
