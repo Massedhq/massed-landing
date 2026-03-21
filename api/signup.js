@@ -64,22 +64,23 @@ module.exports = async function handler(req, res) {
     const emailTaken = await pool.query('SELECT id FROM signups WHERE LOWER(email)=LOWER($1) LIMIT 1', [finalEmail]);
     if (emailTaken.rows.length) { await pool.end(); return res.status(409).json({ error: 'That email is already registered.' }); }
 
-   // Check referral code is valid (mandatory)
-if (!finalReferral) {
-  await pool.end();
-  return res.status(400).json({ error: 'A referral code is required to join.' });
-}
+    // Check referral code is valid (mandatory)
+    if (!finalReferral) {
+      await pool.end();
+      return res.status(400).json({ error: 'A referral code is required to join.' });
+    }
 
-const adminCodes = ['MASSED-ADMIN', 'MASSED-COORDINATOR'];
-if (!adminCodes.includes(finalReferral.toUpperCase())) {
-  const validRef = await pool.query(
-    'SELECT id FROM signups WHERE UPPER(referral_code)=UPPER($1) LIMIT 1',
-    [finalReferral]
-  );
-  if (!validRef.rows.length) {
-    await pool.end();
-    return res.status(400).json({ error: 'Invalid referral code. Please check and try again.' });
-  }
+    const adminCodes = ['MASSED-ADMIN', 'MASSED-COORDINATOR'];
+    if (!adminCodes.includes(finalReferral.toUpperCase())) {
+      const validRef = await pool.query(
+        'SELECT id FROM signups WHERE UPPER(referral_code)=UPPER($1) LIMIT 1',
+        [finalReferral]
+      );
+      if (!validRef.rows.length) {
+        await pool.end();
+        return res.status(400).json({ error: 'Invalid referral code. Please check and try again.' });
+      }
+    }
 
     // Get waitlist position
     const countRes = await pool.query('SELECT COUNT(*) as count FROM signups');
