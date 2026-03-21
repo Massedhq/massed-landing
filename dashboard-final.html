@@ -1510,7 +1510,7 @@ function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status=
       <label style="font-size:0.75rem;font-weight:700;color:#6b7280;letter-spacing:0.1em;text-transform:uppercase;">Phone</label>
       <input id="edit-phone" value="${phone}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:6px 0 20px;font-size:0.9rem;">
       <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="this.closest('[style]').remove()" style="padding:10px 20px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">Cancel</button>
+       <button onclick="document.getElementById('edit-overlay').remove()" style="padding:10px 20px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">Cancel</button>
         <button id="edit-save-btn" onclick="saveEditCreator(${id})" style="padding:10px 20px;background:#C49A6C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;">Save Changes</button>
       </div>
     </div>`;
