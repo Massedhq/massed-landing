@@ -884,6 +884,7 @@ function showTab(tab,el){
           </div>`).join('')}
         </div>
         <div class="form-group" style="margin-bottom:14px;"><label>Email (Optional)</label><input class="form-input" placeholder="creator@email.com" id="addEmail"></div>
+        <div class="form-group" style="margin-bottom:14px;"><label>Phone (Optional)</label><input class="form-input" placeholder="Phone number" id="addPhone"></div>
         <div class="form-group" style="margin-bottom:24px;"><label>Notes</label><textarea class="form-textarea" placeholder="Audience context, why they're a good fit…" id="addNotes"></textarea></div>
         <div class="form-actions">
           <button class="btn-save-draft" onclick="showToast('Draft saved')">Save Draft</button>
@@ -1577,6 +1578,7 @@ async function addCreator(){
   const name=document.getElementById('addName')?.value.trim();
   const handle=document.getElementById('addHandle')?.value.trim()||'';
   const email=document.getElementById('addEmail')?.value.trim()||'';
+  const phone=document.getElementById('addPhone')?.value.trim()||'';
   const notes=document.getElementById('addNotes')?.value.trim()||'';
   if(!name){showToast('✗ Please enter a creator name','error');return;}
   if(!selectedContact){showToast('✗ Please select how they were contacted','error');return;}
@@ -1594,6 +1596,9 @@ async function addCreator(){
   headers:{'Content-Type':'application/json'},
   body:JSON.stringify({
     full_name:name,
+    email:email||'',
+    phone:phone||'',
+    username:handle.replace('@',''),
     code:code,
     created_by:loggedInRole==='admin'?'Admin':'Coordinator'
   })
@@ -1604,6 +1609,7 @@ async function addCreator(){
       document.getElementById('addName').value='';
       document.getElementById('addHandle').value='';
       document.getElementById('addEmail').value='';
+      document.getElementById('addPhone').value='';
       if(document.getElementById('addNotes'))document.getElementById('addNotes').value='';
       selectedContact=null;
       document.querySelectorAll('.contact-option').forEach(el=>el.classList.remove('selected'));
