@@ -678,6 +678,22 @@ function statusBadge(s){const map={active:'badge-active Active',sent:'badge-sent
 const API='';
 let realSignups=[];
 
+let waitlistData={total:48000,claimed:0,remaining:48000,percent:0};
+
+async function loadWaitlist(){
+  try{
+    const r=await fetch(API+'/api/waitlist');
+    const d=await r.json();
+    if(d.total){
+      waitlistData=d;
+      // Update any live counters on screen
+      document.querySelectorAll('.live-spots-remaining').forEach(el=>el.textContent=d.remaining.toLocaleString());
+      document.querySelectorAll('.live-spots-claimed').forEach(el=>el.textContent=d.claimed.toLocaleString());
+      document.querySelectorAll('.live-spots-pct').forEach(el=>el.textContent=d.percent+'%');
+    }
+  }catch(e){console.error('Failed to load waitlist:',e);}
+}
+
 async function loadRealSignups(){
   try{
     const r=await fetch(API+'/api/signups');
@@ -720,7 +736,7 @@ async function loadDashboard(){
   document.getElementById('sideAvatar').textContent=initials;
   document.getElementById('sideName').textContent=loggedInUser;
   document.getElementById('sideRole').textContent=isAdmin?'Admin':'Coordinator';
-  await loadRealSignups();
+  await Promise.all([loadRealSignups(), loadWaitlist()]);
   if(isAdmin){
     document.getElementById('adminSidebarSection').style.display='';
     showTab('admin-overview',document.getElementById('nav-admin-overview'));
@@ -1080,30 +1096,34 @@ function showTab(tab,el){
       </div>
     </div>`;
   } else if(tab==='admin-overview'){
-    const total=48000,claimed=performers.length,spotsLeft=total-claimed,pct=Math.round(claimed/total*100);
     const emailSent=performers.filter(p=>p.email_sent).length;
     const emailFailed=performers.filter(p=>!p.email_sent).length;
     const today=new Date().toDateString();
     const todaySignups=performers.filter(p=>new Date(p.created_at).toDateString()===today).length;
-    main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🛡️ Admin Overview</div><div class="page-sub">Platform-wide management — live data</div></div>
+    main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🛡️ Admin Overview</div><div class="page-sub">Platform-wide management — live from Neon</div></div>
     <div class="page-content">
       <div class="analytics-grid">
-        <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num" style="color:#ef4444;">${claimed.toLocaleString()}</div><div class="stat-box-note up">↑ ${todaySignups} today</div></div>
-        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num" style="color:var(--gold)">${spotsLeft.toLocaleString()}</div><div class="stat-box-note">of ${total.toLocaleString()} total</div></div>
+        <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num" style="color:#ef4444;">${waitlistData.claimed.toLocaleString()}</div><div class="stat-box-note up">↑ ${todaySignups} today</div></div>
+        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num" style="color:var(--gold)">${waitlistData.remaining.toLocaleString()}</div><div class="stat-box-note">of ${waitlistData.total.toLocaleString()} total</div></div>
         <div class="stat-box"><div class="stat-box-label">Active Coordinators</div><div class="stat-box-num">12</div><div class="stat-box-note">4 regions</div></div>
         <div class="stat-box"><div class="stat-box-label">Platform Revenue</div><div class="stat-box-num">$48,657</div><div class="stat-box-note up">↑ $1,240 today</div></div>
         <div class="stat-box"><div class="stat-box-label">Open Disputes</div><div class="stat-box-num" style="color:#ef4444;">3</div><div class="stat-box-note warn">Needs attention</div></div>
         <div class="stat-box"><div class="stat-box-label">Templates Live</div><div class="stat-box-num">24</div><div class="stat-box-note">8 premium</div></div>
       </div>
       <div class="settings-card">
-        <h3>🎯 48K Waitlist Counter</h3>
-        <div style="margin-bottom:10px;"><div class="seats-bar-bg" style="height:10px;"><div class="seats-bar-fill" style="width:${pct}%;background:var(--gold);"></div></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-dim);margin-bottom:14px;"><span><b style="color:var(--text)">${claimed.toLocaleString()}</b> claimed</span><span><b style="color:var(--gold)">${spotsLeft.toLocaleString()}</b> remaining</span><span>${pct}% filled</span></div>
+        <h3>🎯 48K Waitlist Counter — Live</h3>
+        <div style="margin-bottom:10px;"><div class="seats-bar-bg" style="height:10px;"><div class="seats-bar-fill" style="width:${waitlistData.percent}%;background:var(--gold);"></div></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-dim);margin-bottom:14px;">
+          <span><b style="color:var(--text)">${waitlistData.claimed.toLocaleString()}</b> claimed</span>
+          <span><b style="color:var(--gold)">${waitlistData.remaining.toLocaleString()}</b> remaining</span>
+          <span>${waitlistData.percent}% filled</span>
+        </div>
         <div class="seats-adj">
           <label style="font-size:0.78rem;font-weight:700;color:var(--text-dim);">Adjust total cap:</label>
-          <input type="number" value="48000" id="capInput">
+          <input type="number" value="${waitlistData.total}" id="capInput">
           <button class="btn-primary" onclick="showToast('✓ Cap updated to '+document.getElementById('capInput').value,'success')">Update Cap</button>
-          <button class="btn-ghost" onclick="showToast('📥 Waitlist exported','success')">Export CSV</button>
+          <button class="btn-ghost" onclick="exportSignupsCSV()">📥 Export CSV</button>
+          <button class="btn-ghost" onclick="loadWaitlist().then(()=>showTab('admin-overview',document.getElementById('nav-admin-overview')))">🔄 Refresh</button>
         </div>
       </div>
     </div>`;
@@ -1451,7 +1471,7 @@ async function resendEmail(id, btn){
     const d=await r.json();
     if(d.success){
       showToast('✅ Email resent successfully','success');
-      await loadRealSignups();
+      await Promise.all([loadRealSignups(), loadWaitlist()]);
       renderPipeline(performers);
     } else {
       showToast('❌ Failed: '+d.error,'error');
@@ -1574,6 +1594,15 @@ function doReset(){
   closeModal();showToast('✓ Coordinator credentials reset','success');
   showTab('reset',document.getElementById('nav-reset'));
 }
+
+// ===== AUTO REFRESH =====
+// Refresh waitlist counter every 60 seconds when dashboard is open
+setInterval(()=>{
+  if(loggedInRole&&document.getElementById('dashboard-screen')&&
+     !document.getElementById('dashboard-screen').classList.contains('hidden')){
+    loadWaitlist();
+  }
+},60000);
 
 // ===== TOAST =====
 function showToast(msg,type=''){
