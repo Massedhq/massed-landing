@@ -889,11 +889,40 @@ function showTab(tab,el){
 
   } else if(tab==='gencode'){
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create individual or bulk access codes</div></div>
+    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create referral codes for Admin, Coordinators, or Creators</div></div>
     <div class="page-content">
+
+      <div class="gen-grid" style="margin-bottom:20px;">
+        <div class="gen-card" style="border:2px solid rgba(220,38,38,0.3);background:rgba(220,38,38,0.03);">
+          <div class="gen-card-title" style="color:#ef4444;">🛡️ Admin Personal Code</div>
+          <div class="gen-card-sub">Generate a referral code for yourself (Admin)</div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Code Name / Label</label><input class="form-input" placeholder="e.g. AVYADORE-VIP" id="adminCodeName"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Use Limit</label><input class="form-input" placeholder="100" type="number" id="adminCodeLimit"></div>
+          <div class="form-group" style="margin-bottom:16px;"><label>Expiry Date (Optional)</label><input class="form-input" type="date" id="adminCodeExpiry"></div>
+          <button class="btn-gold" style="width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);border-color:#ef4444;" onclick="generateAdminCode()">Generate My Code</button>
+          <div class="gen-result" id="adminCodeResult" style="display:none;">
+            <div><div class="gen-result-label">Your Code</div><div class="gen-result-code" id="adminCodeValue"></div></div>
+            <button class="copy-btn" onclick="copyAdminCode()">Copy</button>
+          </div>
+        </div>
+
+        <div class="gen-card" style="border:2px solid rgba(196,154,108,0.3);background:rgba(196,154,108,0.03);">
+          <div class="gen-card-title" style="color:var(--gold);">🗺️ Coordinator Code</div>
+          <div class="gen-card-sub">Generate a referral code for a coordinator</div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Coordinator Name</label><input class="form-input" placeholder="e.g. Nicky2U" id="coordCodeName"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Use Limit</label><input class="form-input" placeholder="50" type="number" id="coordCodeLimit"></div>
+          <div class="form-group" style="margin-bottom:16px;"><label>Expiry Date (Optional)</label><input class="form-input" type="date" id="coordCodeExpiry"></div>
+          <button class="btn-gold" style="width:100%" onclick="generateCoordCode()">Generate Coordinator Code</button>
+          <div class="gen-result" id="coordCodeResult" style="display:none;">
+            <div><div class="gen-result-label">Coordinator Code</div><div class="gen-result-code" id="coordCodeValue"></div></div>
+            <button class="copy-btn" onclick="copyCoordCode()">Copy</button>
+          </div>
+        </div>
+      </div>
+
       <div class="gen-grid">
         <div class="gen-card">
-          <div class="gen-card-title">Generate Single Code</div>
+          <div class="gen-card-title">Generate Single Creator Code</div>
           <div class="gen-card-sub">Create a code for one creator</div>
           <div class="form-group" style="margin-bottom:14px;"><label>Creator Handle</label><input class="form-input" placeholder="e.g. @novawest" id="singleHandle"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
@@ -1470,6 +1499,34 @@ function addCreator(){
 }
 
 // ===== CODE GENERATORS =====
+function generateAdminCode(){
+  const name = document.getElementById('adminCodeName').value.trim();
+  const limit = document.getElementById('adminCodeLimit').value || '100';
+  if(!name){ showToast('Please enter a code name','error'); return; }
+  const code = 'ADMIN-' + name.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10) + '-' + Math.floor(1000+Math.random()*9000);
+  document.getElementById('adminCodeValue').textContent = code;
+  document.getElementById('adminCodeResult').style.display = 'flex';
+  showToast('✅ Admin code generated!','success');
+}
+function copyAdminCode(){
+  const code = document.getElementById('adminCodeValue').textContent;
+  navigator.clipboard.writeText(code);
+  showToast('✅ Copied to clipboard','success');
+}
+function generateCoordCode(){
+  const name = document.getElementById('coordCodeName').value.trim();
+  const limit = document.getElementById('coordCodeLimit').value || '50';
+  if(!name){ showToast('Please enter coordinator name','error'); return; }
+  const code = 'COORD-' + name.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10) + '-' + Math.floor(1000+Math.random()*9000);
+  document.getElementById('coordCodeValue').textContent = code;
+  document.getElementById('coordCodeResult').style.display = 'flex';
+  showToast('✅ Coordinator code generated!','success');
+}
+function copyCoordCode(){
+  const code = document.getElementById('coordCodeValue').textContent;
+  navigator.clipboard.writeText(code);
+  showToast('✅ Copied to clipboard','success');
+}
 function generateSingle(){
   const handle=document.getElementById('singleHandle').value.trim()||'CREATOR';
   const clean=handle.replace('@','').toUpperCase().slice(0,8);
