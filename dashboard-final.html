@@ -1662,7 +1662,7 @@ async function addCreator(){
     phone:phone||'',
     username:handle.replace('@',''),
     code:code,
-    created_by:loggedInRole==='admin'?'Admin':'Coordinator'
+    created_by:loggedInUser
   })
 });
     const d=await r.json();
