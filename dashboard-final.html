@@ -1704,8 +1704,8 @@ function renderAdminUsers(data){
       const isCreator=p.is_creator===true||p.is_creator==='true';
       return `<tr>
       <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
-      <td><div style="font-weight:700;font-size:0.83rem;">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted">TRUSTED SOURCE</span>':''}</div></td>
-      <td style="font-size:0.78rem;color:var(--text-dim);">${p.email||'—'}</td>
+      <td><div style="font-weight:700;font-size:0.83rem;cursor:pointer;color:var(--rose);" onclick="viewProfile(${p.id})">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted">TRUSTED SOURCE</span>':''}</div></td>
+      <td style="font-size:0.78rem;color:var(--text-dim);">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</td>
       <td style="font-size:0.78rem;color:var(--text-dim);">${p.phone||'—'}</td>
       <td style="font-size:0.78rem;color:var(--gold);font-family:monospace;">@${p.handle?p.handle.replace('@',''):'—'}</td>
       <td style="font-size:0.75rem;color:var(--text-dim);">${p.code&&p.code!=='—'?p.code:'—'}</td>
@@ -1713,6 +1713,7 @@ function renderAdminUsers(data){
       <td><span class="badge ${p.email_sent?'badge-active':'badge-flagged'}">${p.email_sent?'✅ Sent':'❌ Failed'}</span></td>
       <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'-'}</td>
       <td><div class="action-btns">
+        <button class="act-btn act-view" onclick="viewProfile(${p.id})">View</button>
         ${loggedInRole==='admin'?`<button class="act-btn ${p.trusted_source?'act-delete':'act-view'}" onclick="toggleTrusted(${p.id},${p.trusted_source},this)">${p.trusted_source?'Revoke Trusted':'Grant Trusted'}</button>`:''}
         <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
         <button class="act-btn act-delete" onclick="showToast('Delete coming soon')">Delete</button>
@@ -1764,6 +1765,67 @@ async function toggleTrusted(id, currentStatus, btn){
     btn.disabled=false;
     btn.textContent=currentStatus?'Revoke Trusted':'Grant Trusted';
   }
+}
+
+// ===== VIEW PROFILE =====
+function viewProfile(id){
+  const p=performers.find(x=>x.id===id);
+  if(!p)return;
+  const isCreator=p.is_creator===true||p.is_creator==='true';
+  const overlay=document.createElement('div');
+  overlay.id='profile-overlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--rose);color:#fff;font-size:1.2rem;font-weight:700;display:flex;align-items:center;justify-content:center;">${p.initials||p.name.slice(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;color:#111;">${p.name}</div>
+            <div style="font-size:0.8rem;color:#6b7280;">${p.handle||''}</div>
+            ${p.trusted_source?'<span class="badge-trusted" style="margin-top:4px;display:inline-flex;">TRUSTED SOURCE</span>':''}
+          </div>
+        </div>
+        <button onclick="document.getElementById('profile-overlay').remove()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;">&times;</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Type</div>
+          <div style="font-size:0.9rem;font-weight:600;color:${isCreator?'#2563eb':'#16a34a'}">${isCreator?'Creator':'Public Signup'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Waitlist Position</div>
+          <div style="font-size:0.9rem;font-weight:700;color:var(--gold);">#${p.waitlist_pos||'—'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Email</div>
+          <div style="font-size:0.85rem;color:#374151;word-break:break-all;">${p.email&&!p.email.includes('placeholder')?p.email:'—'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Phone</div>
+          <div style="font-size:0.85rem;color:#374151;">${p.phone&&p.phone!=='—'?p.phone:'—'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Referral Code</div>
+          <div style="font-size:0.85rem;font-family:monospace;font-weight:700;color:var(--gold);">${p.code&&p.code!=='—'?p.code:'—'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Email Status</div>
+          <div style="font-size:0.85rem;font-weight:600;color:${p.email_sent?'#16a34a':'#dc2626'}">${p.email_sent?'✅ Sent':'❌ Failed'}</div>
+        </div>
+        <div style="background:#f9fafb;border-radius:10px;padding:14px;grid-column:1/-1;">
+          <div style="font-size:0.65rem;font-weight:700;color:#9ca3af;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Signed Up</div>
+          <div style="font-size:0.85rem;color:#374151;">${p.created_at?new Date(p.created_at).toLocaleString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="document.getElementById('profile-overlay').remove();editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${p.email&&!p.email.includes('placeholder')?p.email:''}','${p.phone&&p.phone!=='—'?p.phone:''}','${p.code&&p.code!=='—'?p.code:''}')" style="flex:1;padding:10px;background:var(--rose);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">✏️ Edit</button>
+        ${loggedInRole==='admin'?`<button onclick="document.getElementById('profile-overlay').remove();toggleTrusted(${p.id},${p.trusted_source},document.createElement('button'))" style="flex:1;padding:10px;background:${p.trusted_source?'#fee2e2':'#dcfce7'};color:${p.trusted_source?'#dc2626':'#16a34a'};border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">${p.trusted_source?'🛡️ Revoke Trusted':'🛡️ Grant Trusted'}</button>`:''}
+        <button onclick="document.getElementById('profile-overlay').remove();resendEmail(${p.id},document.createElement('button'))" style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.85rem;">📧 Resend Email</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
 }
 
 // ===== ADMIN RESET =====
