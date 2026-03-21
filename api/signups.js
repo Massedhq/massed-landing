@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
     const { Pool } = require('pg');
     const pool = new Pool({ connectionString: db, ssl: { rejectUnauthorized: false } });
     const result = await pool.query('SELECT id, full_name, email, phone, username, referral_code, waitlist_pos, email_sent, email_sent_at, created_at, trusted_source, is_creator, created_by FROM signups ORDER BY created_at DESC');
-    await pool.end();');
+    await pool.end();
     return res.status(200).json({ signups: result.rows });
   } catch(err) {
     return res.status(500).json({ error: err.message });
