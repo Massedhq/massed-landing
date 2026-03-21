@@ -224,24 +224,29 @@
   }
   tick(); setInterval(tick, 1000);
 
-  // Username checker
-  const takenNames = ['admin','massed','support','help','info','official','massedhq','test','user','hello','contact'];
+  // Username checker — hits real API
   let usernameTimer = null;
   function checkUsername(val) {
     const status = document.getElementById('username-status');
     val = val.trim().toLowerCase();
     if (val.length === 0) { status.textContent = ''; return; }
     if (val.length < 3) { status.textContent = 'Too short'; status.style.color = '#aaa'; return; }
-    if (!/^[a-z0-9_\.]+$/.test(val)) { status.innerHTML = '&#10005; Invalid characters'; status.style.color = '#e05c5c'; return; }
+    if (!/^[a-z0-9_]+$/.test(val)) { status.innerHTML = '&#10005; Invalid characters'; status.style.color = '#e05c5c'; return; }
     status.textContent = '...'; status.style.color = '#aaa';
     clearTimeout(usernameTimer);
-    usernameTimer = setTimeout(() => {
-      if (takenNames.includes(val)) {
-        status.innerHTML = '&#10005; Taken'; status.style.color = '#e05c5c';
-      } else {
-        status.innerHTML = '&#10003; Available!'; status.style.color = '#4caf50';
+    usernameTimer = setTimeout(async () => {
+      try {
+        const r = await fetch('/api/check-username?username=' + encodeURIComponent(val));
+        const d = await r.json();
+        if (d.available) {
+          status.innerHTML = '&#10003; Available!'; status.style.color = '#4caf50';
+        } else {
+          status.innerHTML = '&#10005; ' + (d.message || 'Username already taken'); status.style.color = '#e05c5c';
+        }
+      } catch(e) {
+        status.textContent = ''; // fail silently
       }
-    }, 700);
+    }, 500);
   }
 
   async function handleSubmit(){
@@ -354,28 +359,11 @@ const API = 'https://massed-landing.vercel.app';
   const phoneInput    = findInput([/phone/i]);
   const referralInput = findInput([/referral|code/i]);
   const usernameInput = findInput([/username|user.?name/i]);
+  // Username input sanitization only — checking is handled by checkUsername()
   if (usernameInput) {
-    let timer;
     usernameInput.addEventListener('input', function() {
-      clearTimeout(timer);
       const val = this.value.replace(/[^a-zA-Z0-9_]/g, '');
       this.value = val;
-      if (val.length < 3) return;
-      timer = setTimeout(async () => {
-        try {
-          const r = await fetch(`${API}/api/check-username?username=${encodeURIComponent(val)}`);
-          const d = await r.json();
-          let status = document.getElementById('massed-username-status');
-          if (!status) {
-            status = document.createElement('div');
-            status.id = 'massed-username-status';
-            status.style.cssText = 'font-size:0.78rem;margin-top:4px;padding:0 4px;';
-            usernameInput.parentNode.insertAdjacentElement('afterend', status);
-          }
-          status.textContent = d.message;
-          status.style.color = d.available ? '#16a34a' : '#ef4444';
-        } catch(e) {}
-      }, 500);
     });
   }
   btn.addEventListener('click', async function(e) {
