@@ -1526,7 +1526,7 @@ async function addCreator(){
         email:email||username+'@placeholder.com',
         phone:'',
         username:username,
-        referral_code:'MASSED-ADMIN'
+        referral_code: loggedInRole === 'admin' ? 'MASSED-ADMIN' : 'MASSED-COORDINATOR'
       })
     });
     const d=await r.json();
