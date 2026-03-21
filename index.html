@@ -244,22 +244,6 @@
     }, 700);
   }
 
-  function showFormError(msg){
-    let el=document.getElementById('form-error');
-    if(!el){
-      el=document.createElement('div');
-      el.id='form-error';
-      el.style.cssText='color:#e05c5c;font-size:13px;font-weight:600;text-align:center;margin-top:10px;padding:10px;background:rgba(224,92,92,0.1);border-radius:8px;border:1px solid rgba(224,92,92,0.3);';
-      document.querySelector('.spots-row').insertAdjacentElement('beforebegin',el);
-    }
-    el.textContent=msg;
-    el.style.display='block';
-  }
-  function hideFormError(){
-    const el=document.getElementById('form-error');
-    if(el)el.style.display='none';
-  }
-
   async function handleSubmit(){
     const name = document.querySelectorAll('input[type="text"]')[0].value.trim();
     const email = document.querySelector('input[type="email"]').value.trim();
@@ -358,6 +342,23 @@
   </div>
   <script>
 const API = 'https://massed-landing.vercel.app';
+function showFormError(msg){
+  let el=document.getElementById('form-error');
+  if(!el){
+    el=document.createElement('div');
+    el.id='form-error';
+    el.style.cssText='color:#e05c5c;font-size:13px;font-weight:600;text-align:center;margin-top:10px;padding:10px;background:rgba(224,92,92,0.1);border-radius:8px;border:1px solid rgba(224,92,92,0.3);';
+    const spotsRow=document.querySelector('.spots-row');
+    if(spotsRow)spotsRow.insertAdjacentElement('beforebegin',el);
+    else document.body.appendChild(el);
+  }
+  el.textContent=msg;
+  el.style.display='block';
+}
+function hideFormError(){
+  const el=document.getElementById('form-error');
+  if(el)el.style.display='none';
+}
 (function() {
   const btn = Array.from(document.querySelectorAll('button, input[type=submit]'))
     .find(el => /secure|spot|submit|sign.?up|reserve|join/i.test(el.textContent || el.value));
