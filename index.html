@@ -244,6 +244,22 @@
     }, 700);
   }
 
+  function showFormError(msg){
+    let el=document.getElementById('form-error');
+    if(!el){
+      el=document.createElement('div');
+      el.id='form-error';
+      el.style.cssText='color:#e05c5c;font-size:13px;font-weight:600;text-align:center;margin-top:10px;padding:10px;background:rgba(224,92,92,0.1);border-radius:8px;border:1px solid rgba(224,92,92,0.3);';
+      document.querySelector('.spots-row').insertAdjacentElement('beforebegin',el);
+    }
+    el.textContent=msg;
+    el.style.display='block';
+  }
+  function hideFormError(){
+    const el=document.getElementById('form-error');
+    if(el)el.style.display='none';
+  }
+
   async function handleSubmit(){
     const name = document.querySelectorAll('input[type="text"]')[0].value.trim();
     const email = document.querySelector('input[type="email"]').value.trim();
@@ -252,9 +268,10 @@
     const username = document.getElementById('username-input').value.trim();
     const consent = document.getElementById('consent-check').checked;
 
-    if(!name || !email){ alert('Please enter your full name and email.'); return; }
-    if(!consent){ alert('Please agree to the Terms of Service and Privacy Policy to continue.'); return; }
+    if(!name || !email){ showFormError('Please enter your full name and email.'); return; }
+    if(!consent){ showFormError('Please agree to the Terms of Service and Privacy Policy to continue.'); return; }
 
+    hideFormError();
     const btn = document.querySelector('.cta-btn');
     btn.textContent = 'Securing...';
     btn.disabled = true;
@@ -273,12 +290,12 @@
       } else {
         btn.textContent = 'Secure My Spot';
         btn.disabled = false;
-        alert(data.error || 'Something went wrong. Please try again.');
+        showFormError(data.error || 'Something went wrong. Please try again.');
       }
     } catch(e) {
       btn.textContent = 'Secure My Spot';
       btn.disabled = false;
-      alert('Connection error. Please try again.');
+      showFormError('Connection error. Please try again.');
     }
   }
 </script>
@@ -382,9 +399,10 @@ const API = 'https://massed-landing.vercel.app';
     const phone    = phoneInput?.value.trim()    || '';
     const referral = referralInput?.value.trim() || '';
     const username = usernameInput?.value.trim() || '';
-    if (!name)     { alert('Please enter your full name.'); return; }
-    if (!email)    { alert('Please enter your email address.'); return; }
-    if (!username) { alert('Please choose a username.'); return; }
+    if (!name)     { showFormError('Please enter your full name.'); return; }
+    if (!email)    { showFormError('Please enter your email address.'); return; }
+    if (!username) { showFormError('Please choose a username.'); return; }
+    hideFormError();
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = 'Securing your spot…';
@@ -396,7 +414,7 @@ const API = 'https://massed-landing.vercel.app';
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Something went wrong. Please try again.');
+        showFormError(data.error || 'Something went wrong. Please try again.');
         btn.disabled = false;
         btn.textContent = originalText;
         return;
@@ -416,7 +434,7 @@ const API = 'https://massed-landing.vercel.app';
         </div>
       `;
     } catch(err) {
-      alert('Connection error. Please try again.');
+      showFormError('Connection error. Please try again.');
       btn.disabled = false;
       btn.textContent = originalText;
     }
