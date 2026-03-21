@@ -1565,7 +1565,7 @@ async function addCreator(){
   btn.disabled=true;btn.textContent='Saving…';
 
   try{
-    const r=await fetch(API+'/api/signup',{
+    const r=await fetch(API+'/api/add-creator',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
