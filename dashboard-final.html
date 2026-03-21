@@ -1524,7 +1524,7 @@ function saveEditCreator(id){
   const btn=document.getElementById('edit-save-btn');
   btn.disabled=true;btn.textContent='Saving…';
 
-  fetch(API+'/api/update-creator',{
+  fetch('https://massed-landing.vercel.app/api/update-creator',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({id,full_name:name,email,phone})
