@@ -1512,7 +1512,7 @@ async function addCreator(){
 
   const username=(handle||name).replace('@','').toLowerCase().replace(/\s/g,'').slice(0,20);
   const clean=username.toUpperCase().slice(0,8);
-  const code='MASSED-'+clean+'-'+Math.floor(1000+Math.random()*9000);
+  const code='M'+Math.floor(10000+Math.random()*90000)+'D';
 
   const btn=document.querySelector('.btn-add-assign');
   btn.disabled=true;btn.textContent='Saving…';
