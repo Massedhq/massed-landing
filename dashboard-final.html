@@ -541,7 +541,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
           <div class="sidebar-section-label">Overview</div>
           <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard',this)"><span class="n-icon">📊</span><span>Dashboard</span></div>
           <div class="sidebar-section-label" style="margin-top:12px;">Outreach</div>
-          <div class="nav-item" id="nav-pipeline" onclick="showTab('pipeline',this)"><span class="n-icon">👥</span><span>Creator Pipeline</span><span class="n-badge">8</span></div>
+          <div class="nav-item" id="nav-pipeline" onclick="showTab('pipeline',this)"><span class="n-icon">👥</span><span>Creator Pipeline</span></div>
           <div class="nav-item" id="nav-outreach" onclick="showTab('outreach',this)"><span class="n-icon">📡</span><span>Outreach Tracker</span><span class="n-badge" style="background:var(--text-dim)">3</span></div>
           <div class="nav-item" id="nav-add" onclick="showTab('add',this)"><span class="n-icon">➕</span><span>Add Creator</span></div>
           <div class="sidebar-section-label" style="margin-top:12px;">Codes</div>
@@ -606,18 +606,6 @@ document.getElementById('vaultPhoto').src = 'data:image/png;base64,/9j/4AAQSkZJR
 
 // ===== AUTH =====
 let currentRole='coordinator', loggedInRole=null, loggedInUser=null, animating=false;
-
-// Restore session on page refresh
-window.addEventListener('DOMContentLoaded', function(){
-  const savedRole = sessionStorage.getItem('massedRole');
-  const savedUser = sessionStorage.getItem('massedUser');
-  if(savedRole && savedUser){
-    loggedInRole = savedRole;
-    loggedInUser = savedUser;
-    document.getElementById('vault-screen').classList.add('hidden');
-    loadDashboard();
-  }
-});
 const credentials={coordinator:{username:'Nicky2U',password:'Capri2026'},admin:{username:'AvyAdore',password:'Taurusme2026'}};
 
 function setRole(r){
@@ -634,7 +622,7 @@ function togglePw(){const p=document.getElementById('password'),i=document.getEl
 function attemptLogin(){
   if(animating)return;
   const user=document.getElementById('username').value.trim(),pass=document.getElementById('password').value,err=document.getElementById('errorMsg'),creds=credentials[currentRole];
-  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;sessionStorage.setItem('massedRole',currentRole);sessionStorage.setItem('massedUser',user);triggerVaultOpen();}
+  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;triggerVaultOpen();}
   else{err.textContent='✗  Invalid credentials.';document.getElementById('password').value='';setTimeout(()=>err.textContent='',4000);}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('vault-screen').classList.contains('hidden'))attemptLogin();});
@@ -651,7 +639,7 @@ function triggerVaultOpen(){
 }
 
 function logout(){
-  loggedInRole=null;loggedInUser=null;animating=false;sessionStorage.removeItem('massedRole');sessionStorage.removeItem('massedUser');
+  loggedInRole=null;loggedInUser=null;animating=false;
   const door=document.getElementById('vaultDoor'),dial=document.getElementById('dialOverlay'),statusEl=document.getElementById('vaultStatus'),btn=document.getElementById('accessBtn');
   door.style.transition='none';door.classList.remove('open');dial.classList.remove('spinning');document.getElementById('interiorText').classList.remove('show');
   setTimeout(()=>door.style.transition='',50);
@@ -700,7 +688,7 @@ async function loadRealSignups(){
     if(d.signups){
       realSignups=d.signups;
       // Convert real signups to performer format for existing tabs
-      performers=d.signups.map((s,i)=>({
+      window.performers=d.signups.map((s,i)=>({
         id:s.id,
         name:s.full_name,
         handle:'@'+s.username,
@@ -820,7 +808,7 @@ function showTab(tab,el){
         <tbody id="pipelineTbody"></tbody></table>
       </div>
     </div>`;
-    loadRealSignups().then(()=>renderPipeline(performers));
+    renderPipeline(performers);
 
   } else if(tab==='outreach'){
     main.innerHTML=`
@@ -876,9 +864,9 @@ function showTab(tab,el){
     <div class="page-header"><div class="page-title">My Codes</div><div class="page-sub">All codes generated and assigned by you</div></div>
     <div class="page-content">
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
-        <div class="stat-box"><div class="stat-box-label">Total Codes</div><div class="stat-box-num">5</div><div class="stat-box-note">Distributed to creators</div></div>
-        <div class="stat-box"><div class="stat-box-label">Total Seats via Codes</div><div class="stat-box-num">1,058</div><div class="stat-box-note up">↑ 340 today</div></div>
-        <div class="stat-box"><div class="stat-box-label">Codes Near Limit</div><div class="stat-box-num" style="color:var(--amber)">4</div><div class="stat-box-note warn">Under 10 uses left</div></div>
+        <div class="stat-box"><div class="stat-box-label">Total Codes</div><div class="stat-box-num">0</div><div class="stat-box-note">Distributed to creators</div></div>
+        <div class="stat-box"><div class="stat-box-label">Total Seats via Codes</div><div class="stat-box-num">0</div><div class="stat-box-note">via your codes</div></div>
+        <div class="stat-box"><div class="stat-box-label">Codes Near Limit</div><div class="stat-box-num" style="color:var(--amber)">0</div><div class="stat-box-note">None</div></div>
       </div>
       <div class="codes-table-wrap">
         <div class="table-section-header"><div class="table-section-title">All Distributed Codes</div><span class="view-all-link" onclick="showTab('gencode',document.getElementById('nav-gencode'))">+ Generate New</span></div>
@@ -939,10 +927,10 @@ function showTab(tab,el){
     <div class="page-header"><div class="page-title">My Performance</div><div class="page-sub">Your outreach and code statistics</div></div>
     <div class="page-content">
       <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-box"><div class="stat-box-label">Total Seats Generated</div><div class="stat-box-num">1,058</div><div class="stat-box-note">via your codes</div></div>
-        <div class="stat-box"><div class="stat-box-label">Conversion Rate</div><div class="stat-box-num">68%</div><div class="stat-box-note">Code use → seat claim</div></div>
-        <div class="stat-box"><div class="stat-box-label">Best Code</div><div class="stat-box-num" style="font-size:1.1rem;">MAYA-3310</div><div class="stat-box-note">441 claims</div></div>
-        <div class="stat-box"><div class="stat-box-label">Active Creators</div><div class="stat-box-num">3</div><div class="stat-box-note">of 8 total</div></div>
+        <div class="stat-box"><div class="stat-box-label">Total Seats Generated</div><div class="stat-box-num">0</div><div class="stat-box-note">via your codes</div></div>
+        <div class="stat-box"><div class="stat-box-label">Conversion Rate</div><div class="stat-box-num">—</div><div class="stat-box-note">No data yet</div></div>
+        <div class="stat-box"><div class="stat-box-label">Best Code</div><div class="stat-box-num" style="font-size:1.1rem;">—</div><div class="stat-box-note">No data yet</div></div>
+        <div class="stat-box"><div class="stat-box-label">Active Creators</div><div class="stat-box-num">${performers.filter(p=>p.email_sent).length}</div><div class="stat-box-note">of ${performers.length} total</div></div>
       </div>
       <div class="perf-leaderboard">
         <div class="table-section-header"><div class="table-section-title">Code Performance Leaderboard</div></div>
@@ -965,8 +953,7 @@ function showTab(tab,el){
   } else if(tab==='notes'){
     const msgHistory=[
     
-      {from:'admin',text:'Great work! Consider increasing her code limit to 100.',time:'Today · 10:45 AM'},
-      {from:'coord',text:'Done — also Drew Carter still hasn\'t responded. Should I follow up again?',time:'Today · 11:02 AM'},
+
     ];
     main.innerHTML=`
     <div class="page-header"><div class="page-title">Notes & Messages</div><div class="page-sub">Creator notes, follow-up reminders, and coordinator messaging</div></div>
@@ -1031,7 +1018,7 @@ function showTab(tab,el){
             <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;">Quick Messages</div>
             <div style="display:flex;flex-direction:column;gap:6px;">
               ${[
-                'Great work this week! Keep pushing signups.',
+                '',
                 'Please follow up with creators who haven\'t shared their code yet.',
                 'New referral codes are ready — please distribute.',
                 'Reminder: update notes on any flagged accounts.'
@@ -1103,10 +1090,10 @@ function showTab(tab,el){
       <div class="analytics-grid">
         <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num" style="color:#ef4444;">${waitlistData.claimed.toLocaleString()}</div><div class="stat-box-note up">↑ ${todaySignups} today</div></div>
         <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num" style="color:var(--gold)">${waitlistData.remaining.toLocaleString()}</div><div class="stat-box-note">of ${waitlistData.total.toLocaleString()} total</div></div>
-        <div class="stat-box"><div class="stat-box-label">Active Coordinators</div><div class="stat-box-num">12</div><div class="stat-box-note">4 regions</div></div>
+        <div class="stat-box"><div class="stat-box-label">Active Coordinators</div><div class="stat-box-num">1</div><div class="stat-box-note">—</div></div>
         <div class="stat-box"><div class="stat-box-label">Platform Revenue</div><div class="stat-box-num">$48,657</div><div class="stat-box-note up">↑ $1,240 today</div></div>
-        <div class="stat-box"><div class="stat-box-label">Open Disputes</div><div class="stat-box-num" style="color:#ef4444;">3</div><div class="stat-box-note warn">Needs attention</div></div>
-        <div class="stat-box"><div class="stat-box-label">Templates Live</div><div class="stat-box-num">24</div><div class="stat-box-note">8 premium</div></div>
+        <div class="stat-box"><div class="stat-box-label">Open Disputes</div><div class="stat-box-num" style="color:#ef4444;">0</div><div class="stat-box-note">None</div></div>
+        
       </div>
       <div class="settings-card">
         <h3>🎯 48K Waitlist Counter — Live</h3>
@@ -1136,14 +1123,14 @@ function showTab(tab,el){
         <button class="btn-ghost" onclick="exportSignupsCSV()">📥 Export CSV</button>
       </div>
       <div class="table-section">
-        <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="adminUserCount">Loading…</div></div>
+        <div class="table-section-header"><div class="table-section-title">All Signups</div><div class="table-section-sub" id="adminUserCount">${performers.length} total</div></div>
         <table class="data-table" style="min-width:700px;">
           <thead><tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Username</th><th>Referral Code</th><th>Email Status</th><th>Signed Up</th><th>Actions</th></tr></thead>
-          <tbody id="adminUsersTbody"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-dim);">Loading signups…</td></tr></tbody>
+          <tbody id="adminUsersTbody"></tbody>
         </table>
       </div>
     </div>`;
-    loadRealSignups().then(()=>renderAdminUsers(performers));
+    renderAdminUsers(performers);
 
   } else if(tab==='admin-launch'){
     const creators=[
