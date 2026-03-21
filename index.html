@@ -269,6 +269,8 @@
       const data = await res.json();
       if (res.ok) {
         hideFormError();
+        const errEl=document.getElementById('form-error');
+        if(errEl)errEl.remove();
         const formCard = document.querySelector('.form-card');
         if(formCard){
           formCard.innerHTML = `
@@ -435,6 +437,8 @@ function hideFormError(){
         return;
       }
       hideFormError();
+      const errEl=document.getElementById('form-error');
+      if(errEl)errEl.remove();
       const formCard = document.querySelector('.form-card');
       if(formCard){
         formCard.innerHTML = `
