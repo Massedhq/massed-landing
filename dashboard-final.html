@@ -528,10 +528,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
     <div class="notif-dropdown" id="notifDropdown">
       <div class="notif-header">Notifications <span class="notif-clear" onclick="clearNotifs()">Clear all</span></div>
       <div id="notifList">
-        <div class="notif-item"><div class="notif-dot2 new"></div><div><div class="notif-msg">New signup: <b>@freshcreator</b> used REF-ALPHA</div><div class="notif-time">2 mins ago</div></div></div>
-        <div class="notif-item"><div class="notif-dot2 new"></div><div><div class="notif-msg">New signup: <b>@viralvibe</b> used REF-BETA</div><div class="notif-time">14 mins ago</div></div></div>
+        <div class="notif-item"><div class="notif-dot2 info"></div><div><div class="notif-msg">No new notifications</div><div class="notif-time">—</div></div></div>
         <div class="notif-item"><div class="notif-dot2 warn"></div><div><div class="notif-msg">Code <b>TARA-7204</b> nearing use limit (29/50)</div><div class="notif-time">2 hrs ago</div></div></div>
-        <div class="notif-item"><div class="notif-dot2 info"></div><div><div class="notif-msg"><b>Drew Carter</b> follow-up overdue</div><div class="notif-time">Today</div></div></div>
+
       </div>
     </div>
 
@@ -653,10 +652,7 @@ function logout(){
 // ===== DATA =====
 let performers=[];
 const notes=[
-  {creator:'Kai Monroe @kaimonroe',text:'Very engaged audience. Shared code in IG story. Consider increasing her limit.',time:'Today · 10:24 AM'},
-  {creator:'Nova West @novawest',text:'Responded via LinkedIn. Interested in no-penalty model. Send full brief this week.',time:'Today · 8:11 AM'},
-  {creator:'Drew Carter @drewcarter',text:'No reply. Referred in by Leo Vance — mention Leo in the next message.',time:'Yesterday · 3:45 PM'},
-  {creator:'Rey Lowe @reylowe',text:'Code sent via email. Has not shared yet. YouTube audience may need more context.',time:'2 days ago'},
+
 ];
 
 const platMap={ig:{label:'Instagram',cls:'plat-ig',short:'IG'},tk:{label:'TikTok',cls:'plat-tk',short:'TK'},fb:{label:'Facebook',cls:'plat-fb',short:'f'},li:{label:'LinkedIn',cls:'plat-li',short:'in'},sc:{label:'Snapchat',cls:'plat-sc',short:'sc'},em:{label:'Emailed',cls:'plat-em',short:'✉'},tw:{label:'Twitch',cls:'plat-tw',short:'Tw'},re:{label:'Referred In By',cls:'plat-re',short:'R'},yt:{label:'YouTube',cls:'plat-yt',short:'YT'},x:{label:'Twitter X',cls:'plat-x',short:'X'}};
@@ -666,7 +662,7 @@ function creatorAv(p){return `<div class="creator-av" style="background:${p.colo
 function statusBadge(s){const map={active:'badge-active Active',sent:'badge-sent Code Sent',responded:'badge-responded Responded',noreply:'badge-noreply No Reply',flagged:'badge-flagged Flagged'};const[cls,lbl]=(map[s]||'badge-noreply '+s).split(' ');return `<span class="badge ${cls}">${lbl||s}</span>`;}
 
 // ===== DASHBOARD LOAD =====
-const API='';
+const API='https://massed-landing.vercel.app';
 let realSignups=[];
 
 let waitlistData={total:48000,claimed:0,remaining:48000,percent:0};
@@ -788,10 +784,9 @@ function showTab(tab,el){
           </div>
           <div class="live-activity">
             <h4>Live Activity</h4>
-            <div class="live-item"><div class="live-dot g"></div><div><div class="live-text"><b>Kai Monroe</b> — 4 new claims</div><div class="live-time">12 mins ago</div></div></div>
-            <div class="live-item"><div class="live-dot b"></div><div><div class="live-text"><b>Nova West</b> replied</div><div class="live-time">1 hr ago</div></div></div>
+            <div class="live-item"><div class="live-dot g"></div><div><div class="live-text">No recent activity</div><div class="live-time">—</div></div></div>
             <div class="live-item"><div class="live-dot a"></div><div><div class="live-text">Code <b>TARA-7204</b> hit 29/50</div><div class="live-time">2 hrs ago</div></div></div>
-            <div class="live-item"><div class="live-dot r"></div><div><div class="live-text"><b>Drew Carter</b> follow-up due</div><div class="live-time">Today</div></div></div>
+
           </div>
         </div>
       </div>
@@ -957,7 +952,7 @@ function showTab(tab,el){
 
   } else if(tab==='notes'){
     const msgHistory=[
-      {from:'coord',text:'Kai Monroe just shared her code in her IG story — 4 new claims in 10 mins!',time:'Today · 10:31 AM'},
+    
       {from:'admin',text:'Great work! Consider increasing her code limit to 100.',time:'Today · 10:45 AM'},
       {from:'coord',text:'Done — also Drew Carter still hasn\'t responded. Should I follow up again?',time:'Today · 11:02 AM'},
     ];
@@ -1140,10 +1135,7 @@ function showTab(tab,el){
 
   } else if(tab==='admin-launch'){
     const creators=[
-      {name:'Kai Monroe',handle:'@kaimonroe',status:'pending',audience:'420K'},
-      {name:'Maya Chen',handle:'@mayachen',status:'approved',audience:'511K'},
-      {name:'Nova West',handle:'@novawest',status:'pending',audience:'302K'},
-      {name:'Leo Vance',handle:'@leovance',status:'approved',audience:'183K'},
+
     ];
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🚀 Launch Controls</div><div class="page-sub">Approve individual creators to go live on the platform</div></div>
     <div class="page-content">
@@ -1189,7 +1181,7 @@ function showTab(tab,el){
       </div>
       <div class="broadcast-card">
         <h3>Recent Broadcasts</h3>
-        ${[['Waitlist update — doors opening soon','All Users','Email','Mar 14','16,219 delivered'],['New template drop!','Performers','Both','Mar 10','15,890 delivered'],['Coordinator training reminder','Coordinators','In-App','Mar 8','12 delivered']].map(([sub,seg,ch,date,stats])=>`
+        ${[].map(([sub,seg,ch,date,stats])=>`
         <div style="padding:10px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:flex-start;">
           <div><div style="font-weight:700;font-size:0.85rem;">${sub}</div><div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px;">${seg} · ${ch} · ${date}</div></div>
           <div style="font-size:0.72rem;color:var(--green);font-weight:600;">${stats}</div>
@@ -1201,11 +1193,7 @@ function showTab(tab,el){
     const professions=['All','Beauty','Fitness','Fashion','Food','Tech','Finance','Real Estate','Music'];
     const showcaseCreators=[
       {name:'Avy Adore',prof:'Beauty | Wellness | Real Estate',tags:['Beauty','Wellness'],avatar:'AA',color:'#8B4513',followers:'420K',links:9,featured:true},
-      {name:'Kai Monroe',prof:'Fitness Creator',tags:['Fitness','Lifestyle'],avatar:'KM',color:'#2563eb',followers:'218K',links:5,featured:false},
-      {name:'Maya Chen',prof:'Fashion & Style',tags:['Fashion','Beauty'],avatar:'MC',color:'#16a34a',followers:'511K',links:7,featured:true},
-      {name:'Sara Wilson',prof:'UGC Creator',tags:['Tech','Content'],avatar:'SW',color:'#7c3aed',followers:'302K',links:6,featured:false},
-      {name:'Blair Belle',prof:'Beauty Biz Mentor',tags:['Beauty','Business'],avatar:'BB',color:'#d97706',followers:'183K',links:8,featured:false},
-      {name:'Nova West',prof:'Real Estate',tags:['Real Estate'],avatar:'NW',color:'#0a66c2',followers:'95K',links:4,featured:false},
+
     ];
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🏪 Showcase Marketplace</div><div class="page-sub">Public directory — manage showcase cards across the network</div></div>
     <div class="page-content">
@@ -1271,9 +1259,7 @@ function showTab(tab,el){
 
   } else if(tab==='admin-disputes'){
     const disputes=[
-      {id:'DSP-0041',type:'Refund Request',user:'Jordan Lee',amount:'$29.00',desc:'Purchased course but cannot access content.',status:'open',date:'Mar 14'},
-      {id:'DSP-0038',type:'Billing Dispute',user:'Riley Kim',amount:'$97.00',desc:'Charged twice for same subscription.',status:'open',date:'Mar 13'},
-      {id:'DSP-0035',type:'Content Removal',user:'Drew Carter',amount:null,desc:'Reports inaccurate showcase information.',status:'resolved',date:'Mar 10'},
+
     ];
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">⚖️ Disputes & Refunds</div><div class="page-sub">Review and resolve user disputes and refund requests</div></div>
     <div class="page-content">
@@ -1300,10 +1286,7 @@ function showTab(tab,el){
 
   } else if(tab==='admin-coordinators'){
     const coords=[
-      {name:'Nicky Rivera',email:'nicky@massed.io',creators:42,region:'North America'},
-      {name:'Jordan Smith',email:'jordan@massed.io',creators:28,region:'Europe'},
-      {name:'Ava Thompson',email:'ava@massed.io',creators:35,region:'Asia Pacific'},
-      {name:'Marcus Bell',email:'marcus@massed.io',creators:19,region:'Latin America'},
+
     ];
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🗺️ Coordinator Assignment</div><div class="page-sub">Assign coordinators to regions or individual creators</div></div>
     <div class="page-content">
@@ -1342,7 +1325,7 @@ function showTab(tab,el){
       <div class="rev-chart">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h3>Top Referral Codes</h3><button class="btn-ghost" style="font-size:0.75rem;padding:6px 12px;" onclick="showToast('✓ Exported','success')">Export CSV</button></div>
         <table class="creators-table"><thead><tr><th>Code</th><th>Coordinator</th><th>Claims</th><th>Conversion</th><th>Revenue</th></tr></thead>
-        <tbody>${[['REF-ALPHA','Nicky Rivera',442,'88%','$1,326'],['REF-BETA','Jordan Smith',289,'78%','$867'],['REF-GAMMA','Ava Thompson',312,'82%','$936'],['REF-DELTA','Marcus Bell',156,'72%','$468']].map(([code,coord,claims,conv,rev])=>`<tr>
+        <tbody>${[].map(([code,coord,claims,conv,rev])=>`<tr>
           <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">${code}</td>
           <td>${coord}</td><td>${claims}</td><td style="color:var(--green);">${conv}</td><td style="font-weight:700;">${rev}</td>
         </tr>`).join('')}</tbody></table>
@@ -1351,13 +1334,7 @@ function showTab(tab,el){
 
   } else if(tab==='admin-audit'){
     const logs=[
-      {time:'Mar 15, 10:24AM',user:'AvyAdore',role:'admin',action:'Reset coordinator credentials',target:'Nicky Rivera'},
-      {time:'Mar 15, 9:41AM',user:'Nicky2U',role:'coord',action:'Banned performer',target:'Riley Kim (@rileyreel)'},
-      {time:'Mar 15, 8:55AM',user:'AvyAdore',role:'admin',action:'Approved launch',target:'Kai Monroe'},
-      {time:'Mar 14, 4:12PM',user:'AvyAdore',role:'admin',action:'Updated platform cap',target:'48,000 → 50,000'},
-      {time:'Mar 14, 2:33PM',user:'Nicky2U',role:'coord',action:'Generated referral code',target:'REF-EPSILON'},
-      {time:'Mar 14, 11:07AM',user:'AvyAdore',role:'admin',action:'Sent broadcast',target:'All Users — 16,219 sent'},
-      {time:'Mar 13, 3:45PM',user:'Nicky2U',role:'coord',action:'Deleted performer account',target:'Drew Carter'},
+      // No audit entries yet
     ];
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">📋 Audit Log</div><div class="page-sub">Full log of all admin and coordinator actions</div></div>
     <div class="page-content">
