@@ -1533,7 +1533,7 @@ function saveEditCreator(id){
   .then(d=>{
     if(d.success){
       showToast('✓ Creator updated','success');
-      document.querySelector('[style*="inset:0"]').remove();
+      document.getElementById('edit-overlay').remove();
       loadRealSignups().then(()=>renderPipeline(performers));
     } else showToast('✗ '+(d.error||'Failed'),'error');
   })
