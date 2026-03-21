@@ -720,7 +720,8 @@ async function loadRealSignups(){
         email_sent:s.email_sent,
         email_sent_at:s.email_sent_at,
         created_at:s.created_at,
-        trusted_source:s.trusted_source||false
+        trusted_source:s.trusted_source||false,
+        is_creator:s.is_creator||false
       }));
     }
   }catch(e){console.error('Failed to load signups:',e);}
@@ -1700,7 +1701,7 @@ function renderAdminUsers(data){
   tbody.innerHTML=data.length===0
     ?'<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--text-dim);">No signups yet — they will appear here automatically once your landing page receives submissions.</td></tr>'
     :data.map(p=>{
-      const isCreator=/^M\d+D$/.test(p.code);
+      const isCreator=p.is_creator===true||p.is_creator==='true';
       return `<tr>
       <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
       <td><div style="font-weight:700;font-size:0.83rem;">${p.name}${p.trusted_source?'&nbsp;<span class="badge-trusted">TRUSTED SOURCE</span>':''}</div></td>
@@ -1733,7 +1734,7 @@ function filterAdminUserStatus(v){
 function filterAdminUserType(v){
   if(!v)return renderAdminUsers(performers);
   renderAdminUsers(performers.filter(p=>{
-    const isCreator=/^M\d+D$/.test(p.code);
+    const isCreator=p.is_creator===true||p.is_creator==='true';
     return v==='creator'?isCreator:!isCreator;
   }));
 }
