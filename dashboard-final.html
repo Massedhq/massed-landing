@@ -606,6 +606,17 @@ document.getElementById('vaultPhoto').src = 'data:image/png;base64,/9j/4AAQSkZJR
 
 // ===== AUTH =====
 let currentRole='coordinator', loggedInRole=null, loggedInUser=null, animating=false;
+
+window.addEventListener('DOMContentLoaded', function(){
+  const savedRole = sessionStorage.getItem('massedRole');
+  const savedUser = sessionStorage.getItem('massedUser');
+  if(savedRole && savedUser){
+    loggedInRole = savedRole;
+    loggedInUser = savedUser;
+    document.getElementById('vault-screen').classList.add('hidden');
+    loadDashboard();
+  }
+});
 const credentials={coordinator:{username:'Nicky2U',password:'Capri2026'},admin:{username:'AvyAdore',password:'Taurusme2026'}};
 
 function setRole(r){
@@ -622,7 +633,7 @@ function togglePw(){const p=document.getElementById('password'),i=document.getEl
 function attemptLogin(){
   if(animating)return;
   const user=document.getElementById('username').value.trim(),pass=document.getElementById('password').value,err=document.getElementById('errorMsg'),creds=credentials[currentRole];
-  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;triggerVaultOpen();}
+  if(user===creds.username&&pass===creds.password){err.textContent='';loggedInRole=currentRole;loggedInUser=user;sessionStorage.setItem('massedRole',currentRole);sessionStorage.setItem('massedUser',user);triggerVaultOpen();}
   else{err.textContent='✗  Invalid credentials.';document.getElementById('password').value='';setTimeout(()=>err.textContent='',4000);}
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('vault-screen').classList.contains('hidden'))attemptLogin();});
@@ -639,7 +650,7 @@ function triggerVaultOpen(){
 }
 
 function logout(){
-  loggedInRole=null;loggedInUser=null;animating=false;
+  loggedInRole=null;loggedInUser=null;animating=false;sessionStorage.removeItem('massedRole');sessionStorage.removeItem('massedUser');
   const door=document.getElementById('vaultDoor'),dial=document.getElementById('dialOverlay'),statusEl=document.getElementById('vaultStatus'),btn=document.getElementById('accessBtn');
   door.style.transition='none';door.classList.remove('open');dial.classList.remove('spinning');document.getElementById('interiorText').classList.remove('show');
   setTimeout(()=>door.style.transition='',50);
@@ -688,7 +699,7 @@ async function loadRealSignups(){
     if(d.signups){
       realSignups=d.signups;
       // Convert real signups to performer format for existing tabs
-      window.performers=d.signups.map((s,i)=>({
+      performers=d.signups.map((s,i)=>({
         id:s.id,
         name:s.full_name,
         handle:'@'+s.username,
@@ -889,8 +900,36 @@ function showTab(tab,el){
 
   } else if(tab==='gencode'){
     main.innerHTML=`
-    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create individual or bulk access codes</div></div>
+    <div class="page-header"><div class="page-title">Generate Code</div><div class="page-sub">Create referral codes for Admin, Coordinators, or Creators</div></div>
     <div class="page-content">
+
+      <div class="gen-grid" style="margin-bottom:20px;">
+        <div class="gen-card" style="border:2px solid rgba(220,38,38,0.3);background:rgba(220,38,38,0.03);">
+          <div class="gen-card-title" style="color:#ef4444;">🛡️ Admin Personal Code</div>
+          <div class="gen-card-sub">Generate a referral code for yourself (Admin)</div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Code Name / Label</label><input class="form-input" placeholder="e.g. AVYADORE-VIP" id="adminCodeName"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Use Limit</label><input class="form-input" placeholder="100" type="number" id="adminCodeLimit"></div>
+          <div class="form-group" style="margin-bottom:16px;"><label>Expiry Date (Optional)</label><input class="form-input" type="date" id="adminCodeExpiry"></div>
+          <button class="btn-gold" style="width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);border-color:#ef4444;" onclick="generateAdminCode()">Generate My Code</button>
+          <div class="gen-result" id="adminCodeResult" style="display:none;">
+            <div><div class="gen-result-label">Your Code</div><div class="gen-result-code" id="adminCodeValue"></div></div>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('adminCodeValue').textContent);showToast('✅ Copied!','success')">Copy</button>
+          </div>
+        </div>
+        <div class="gen-card" style="border:2px solid rgba(196,154,108,0.3);background:rgba(196,154,108,0.03);">
+          <div class="gen-card-title" style="color:var(--gold);">🗺️ Coordinator Code</div>
+          <div class="gen-card-sub">Generate a referral code for a coordinator</div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Coordinator Name</label><input class="form-input" placeholder="e.g. Nicky2U" id="coordCodeName"></div>
+          <div class="form-group" style="margin-bottom:14px;"><label>Use Limit</label><input class="form-input" placeholder="50" type="number" id="coordCodeLimit"></div>
+          <div class="form-group" style="margin-bottom:16px;"><label>Expiry Date (Optional)</label><input class="form-input" type="date" id="coordCodeExpiry"></div>
+          <button class="btn-gold" style="width:100%" onclick="generateCoordCode()">Generate Coordinator Code</button>
+          <div class="gen-result" id="coordCodeResult" style="display:none;">
+            <div><div class="gen-result-label">Coordinator Code</div><div class="gen-result-code" id="coordCodeValue"></div></div>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('coordCodeValue').textContent);showToast('✅ Copied!','success')">Copy</button>
+          </div>
+        </div>
+      </div>
+
       <div class="gen-grid">
         <div class="gen-card">
           <div class="gen-card-title">Generate Single Code</div>
@@ -1088,20 +1127,20 @@ function showTab(tab,el){
     main.innerHTML=`<div class="page-header"><div class="page-title" style="color:#ef4444;">🛡️ Admin Overview</div><div class="page-sub">Platform-wide management — live from Neon</div></div>
     <div class="page-content">
       <div class="analytics-grid">
-        <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num" style="color:#ef4444;">${waitlistData.claimed.toLocaleString()}</div><div class="stat-box-note up">↑ ${todaySignups} today</div></div>
-        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num" style="color:var(--gold)">${waitlistData.remaining.toLocaleString()}</div><div class="stat-box-note">of ${waitlistData.total.toLocaleString()} total</div></div>
+        <div class="stat-box"><div class="stat-box-label">Total Signups</div><div class="stat-box-num" style="color:#ef4444;">${performers.length.toLocaleString()}</div><div class="stat-box-note up">${todaySignups} today</div></div>
+        <div class="stat-box"><div class="stat-box-label">Spots Remaining</div><div class="stat-box-num" style="color:var(--gold)">${(48000-performers.length).toLocaleString()}</div><div class="stat-box-note">of 48,000 total</div></div>
         <div class="stat-box"><div class="stat-box-label">Active Coordinators</div><div class="stat-box-num">1</div><div class="stat-box-note">—</div></div>
-        <div class="stat-box"><div class="stat-box-label">Platform Revenue</div><div class="stat-box-num">$48,657</div><div class="stat-box-note up">↑ $1,240 today</div></div>
+        
         <div class="stat-box"><div class="stat-box-label">Open Disputes</div><div class="stat-box-num" style="color:#ef4444;">0</div><div class="stat-box-note">None</div></div>
         
       </div>
       <div class="settings-card">
         <h3>🎯 48K Waitlist Counter — Live</h3>
-        <div style="margin-bottom:10px;"><div class="seats-bar-bg" style="height:10px;"><div class="seats-bar-fill" style="width:${waitlistData.percent}%;background:var(--gold);"></div></div></div>
+        <div style="margin-bottom:10px;"><div class="seats-bar-bg" style="height:10px;"><div class="seats-bar-fill" style="width:${Math.round(performers.length/48000*100)}%;background:var(--gold);"></div></div></div>
         <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-dim);margin-bottom:14px;">
-          <span><b style="color:var(--text)">${waitlistData.claimed.toLocaleString()}</b> claimed</span>
-          <span><b style="color:var(--gold)">${waitlistData.remaining.toLocaleString()}</b> remaining</span>
-          <span>${waitlistData.percent}% filled</span>
+          <span><b style="color:var(--text)">${performers.length.toLocaleString()}</b> claimed</span>
+          <span><b style="color:var(--gold)">${(48000-performers.length).toLocaleString()}</b> remaining</span>
+          <span>${Math.round(performers.length/48000*100)}% filled</span>
         </div>
         <div class="seats-adj">
           <label style="font-size:0.78rem;font-weight:700;color:var(--text-dim);">Adjust total cap:</label>
@@ -1469,6 +1508,22 @@ function addCreator(){
 }
 
 // ===== CODE GENERATORS =====
+function generateAdminCode(){
+  const name=document.getElementById('adminCodeName').value.trim();
+  if(!name){showToast('Please enter a code name','error');return;}
+  const code='ADMIN-'+name.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)+'-'+Math.floor(1000+Math.random()*9000);
+  document.getElementById('adminCodeValue').textContent=code;
+  document.getElementById('adminCodeResult').style.display='flex';
+  showToast('✅ Admin code generated!','success');
+}
+function generateCoordCode(){
+  const name=document.getElementById('coordCodeName').value.trim();
+  if(!name){showToast('Please enter coordinator name','error');return;}
+  const code='COORD-'+name.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10)+'-'+Math.floor(1000+Math.random()*9000);
+  document.getElementById('coordCodeValue').textContent=code;
+  document.getElementById('coordCodeResult').style.display='flex';
+  showToast('✅ Coordinator code generated!','success');
+}
 function generateSingle(){
   const handle=document.getElementById('singleHandle').value.trim()||'CREATOR';
   const clean=handle.replace('@','').toUpperCase().slice(0,8);
