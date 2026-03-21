@@ -721,7 +721,8 @@ async function loadRealSignups(){
         email_sent_at:s.email_sent_at,
         created_at:s.created_at,
         trusted_source:s.trusted_source||false,
-        is_creator:s.is_creator||false
+        is_creator:s.is_creator||false,
+        created_by:s.created_by||null
       }));
     }
   }catch(e){console.error('Failed to load signups:',e);}
@@ -837,7 +838,7 @@ function showTab(tab,el){
       <div class="filter-bar">
         <input class="filter-search" placeholder="Search by name, email or username…" oninput="filterPipeline(this.value)" id="pipeSearch">
         <select class="filter-sel" onchange="filterPipelineStatus(this.value)" id="statusFilter"><option value="">All</option><option value="active">Email Sent</option><option value="sent">Email Failed</option></select>
-        <button class="btn-ghost" onclick="loadRealSignups().then(()=>renderPipeline(performers.filter(p=>p.is_creator===true||p.is_creator==='true')))">🔄 Refresh</button>
+        <button class="btn-ghost" onclick="loadRealSignups().then(()=>renderPipeline(performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser))))">🔄 Refresh</button>
         <button class="btn-ghost" onclick="exportCSV()">Export CSV</button>
       </div>
       <div class="table-section">
@@ -846,7 +847,7 @@ function showTab(tab,el){
         <tbody id="pipelineTbody"></tbody></table>
       </div>
     </div>`;
-    renderPipeline(performers.filter(p=>p.is_creator===true||p.is_creator==='true'));
+    renderPipeline(performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser)));
 
   } else if(tab==='outreach'){
     main.innerHTML=`
@@ -900,7 +901,7 @@ function showTab(tab,el){
 
   } else if(tab==='codes'){
     const assignedCodes=loggedInRole==='coordinator'?JSON.parse(sessionStorage.getItem('coordCodes_'+loggedInUser)||'[]'):[];
-    const allCodes=[...performers.filter(p=>p.code&&p.is_creator), ...assignedCodes.map(c=>({name:'Assigned by Admin',handle:c.label,code:c.code,limit:c.limit,claims:c.claims||0,status:'active',initials:'AD',color:'#C49A6C',isAssigned:true,created:c.created}))];
+    const allCodes=[...performers.filter(p=>p.code&&p.is_creator&&(loggedInRole==='admin'||p.created_by===loggedInUser)), ...assignedCodes.map(c=>({name:'Assigned by Admin',handle:c.label,code:c.code,limit:c.limit,claims:c.claims||0,status:'active',initials:'AD',color:'#C49A6C',isAssigned:true,created:c.created}))];
     main.innerHTML=`
     <div class="page-header"><div class="page-title">My Codes</div><div class="page-sub">All codes generated and assigned by you</div></div>
     <div class="page-content">
@@ -928,7 +929,7 @@ function showTab(tab,el){
       <div class="codes-table-wrap">
         <div class="table-section-header"><div class="table-section-title">All Distributed Codes</div><span class="view-all-link" onclick="showTab('gencode',document.getElementById('nav-gencode'))">+ Generate New</span></div>
         <table class="data-table"><thead><tr><th>Creator</th><th>Code</th><th>Limit</th><th>Used</th><th>Status</th><th>Remaining</th><th></th></tr></thead><tbody>
-        ${performers.filter(p=>p.code&&p.is_creator).map(p=>{
+        ${performers.filter(p=>p.code&&p.is_creator&&(loggedInRole==='admin'||p.created_by===loggedInUser)).map(p=>{
           const remaining=p.limit-p.claims;
           const pct=Math.min(100,Math.round(p.claims/p.limit*100));
           return `<tr>
@@ -1014,7 +1015,7 @@ function showTab(tab,el){
     </div>`;
 
   } else if(tab==='performance'){
-    const myCreators=performers.filter(p=>p.is_creator===true||p.is_creator==='true');
+    const myCreators=performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser));
     const totalClaims=myCreators.reduce((sum,p)=>sum+(p.claims||0),0);
     const bestCreator=myCreators.sort((a,b)=>(b.claims||0)-(a.claims||0))[0];
     main.innerHTML=`
@@ -1577,8 +1578,8 @@ async function resendEmail(id, btn){
     btn.textContent='Resend';
   }
 }
-function filterPipeline(v){const c=performers.filter(p=>p.is_creator===true||p.is_creator==='true');renderPipeline(c.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||(p.handle&&p.handle.toLowerCase().includes(v.toLowerCase()))));}
-function filterPipelineStatus(v){const c=performers.filter(p=>p.is_creator===true||p.is_creator==='true');renderPipeline(v?c.filter(p=>p.status===v||p.platform===v):c);}
+function filterPipeline(v){const c=performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser));renderPipeline(c.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||(p.handle&&p.handle.toLowerCase().includes(v.toLowerCase()))));}
+function filterPipelineStatus(v){const c=performers.filter(p=>(p.is_creator===true||p.is_creator==='true')&&(loggedInRole==='admin'||p.created_by===loggedInUser));renderPipeline(v?c.filter(p=>p.status===v||p.platform===v):c);}
 function copyCode(code){navigator.clipboard?.writeText(code).catch(()=>{});showToast('✓ Code copied: '+code,'success');}
  function editCreator(id, name, email, phone, code){
   const overlay=document.createElement('div');
