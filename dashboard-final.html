@@ -1494,7 +1494,7 @@ function renderPipeline(data){
     <td style="font-family:monospace;font-size:0.75rem;color:var(--gold);">#${p.waitlist_pos||'—'}</td>
     <td style="font-size:0.75rem;color:var(--text-dim);">${p.created_at?new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</td>
     <td><div class="action-btns">
-      <button class="act-btn act-view" onclick="editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.email&&!p.email.includes('placeholder')?p.email:'')}','${p.phone||''}')">Edit</button>
+      <button class="act-btn act-view" onclick="editCreator(${p.id},'${p.name.replace(/'/g,"\\'")}','${(p.email&&!p.email.includes('placeholder')?p.email:'')}','${p.phone||''}','${p.code&&p.code!=='—'?p.code:''}')">Edit</button>
       <button class="act-btn act-view" onclick="resendEmail(${p.id},this)">Resend</button>
     </div></td>
   </tr>`).join('');
@@ -1525,7 +1525,7 @@ async function resendEmail(id, btn){
 function filterPipeline(v){renderPipeline(performers.filter(p=>p.name.toLowerCase().includes(v.toLowerCase())||(p.handle&&p.handle.toLowerCase().includes(v.toLowerCase()))));}
 function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status===v||p.platform===v):performers);}
 function copyCode(code){navigator.clipboard?.writeText(code).catch(()=>{});showToast('✓ Code copied: '+code,'success');}
- function editCreator(id, name, email, phone){
+ function editCreator(id, name, email, phone, code){
   const overlay=document.createElement('div');
 overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
 overlay.id='edit-overlay';  overlay.innerHTML=`
@@ -1536,7 +1536,9 @@ overlay.id='edit-overlay';  overlay.innerHTML=`
       <label style="font-size:0.75rem;font-weight:700;color:#6b7280;letter-spacing:0.1em;text-transform:uppercase;">Email</label>
       <input id="edit-email" value="${email}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:6px 0 14px;font-size:0.9rem;">
       <label style="font-size:0.75rem;font-weight:700;color:#6b7280;letter-spacing:0.1em;text-transform:uppercase;">Phone</label>
-      <input id="edit-phone" value="${phone}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:6px 0 20px;font-size:0.9rem;">
+      <input id="edit-phone" value="${phone}" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:6px 0 14px;font-size:0.9rem;">
+      <label style="font-size:0.75rem;font-weight:700;color:#6b7280;letter-spacing:0.1em;text-transform:uppercase;">Referral Code</label>
+      <input id="edit-code" value="${code||''}" placeholder="e.g. M12345D" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:6px 0 20px;font-size:0.9rem;font-family:monospace;">
       <div style="display:flex;gap:10px;justify-content:flex-end;">
        <button onclick="document.getElementById('edit-overlay').remove()" style="padding:10px 20px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">Cancel</button>
         <button id="edit-save-btn" onclick="saveEditCreator(${id})" style="padding:10px 20px;background:#C49A6C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;">Save Changes</button>
@@ -1549,20 +1551,21 @@ function saveEditCreator(id){
   const name=document.getElementById('edit-name').value.trim();
   const email=document.getElementById('edit-email').value.trim();
   const phone=document.getElementById('edit-phone').value.trim();
+  const code=document.getElementById('edit-code').value.trim().toUpperCase();
   const btn=document.getElementById('edit-save-btn');
   btn.disabled=true;btn.textContent='Saving…';
 
   fetch('https://massed-landing.vercel.app/api/update-creator',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id,full_name:name,email,phone})
+    body:JSON.stringify({id,full_name:name,email,phone,referral_code:code||null})
   })
   .then(r=>r.json())
   .then(d=>{
     if(d.success){
       showToast('✓ Creator updated','success');
       document.getElementById('edit-overlay').remove();
-      loadRealSignups().then(()=>renderPipeline(performers));
+      loadRealSignups().then(()=>{renderPipeline(performers);renderAdminUsers(performers);});
     } else showToast('✗ '+(d.error||'Failed'),'error');
   })
   .catch(()=>showToast('✗ Connection error','error'));
