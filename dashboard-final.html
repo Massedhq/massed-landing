@@ -688,7 +688,7 @@ async function loadRealSignups(){
     if(d.signups){
       realSignups=d.signups;
       // Convert real signups to performer format for existing tabs
-      window.performers=d.signups.map((s,i)=>({
+      performers=d.signups.map((s,i)=>({
         id:s.id,
         name:s.full_name,
         handle:'@'+s.username,
