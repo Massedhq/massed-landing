@@ -1499,8 +1499,8 @@ function filterPipeline(v){renderPipeline(performers.filter(p=>p.name.toLowerCas
 function filterPipelineStatus(v){renderPipeline(v?performers.filter(p=>p.status===v||p.platform===v):performers);}
  function editCreator(id, name, email, phone){
   const overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-  overlay.innerHTML=`
+overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+overlay.id='edit-overlay';  overlay.innerHTML=`
     <div style="background:#fff;border-radius:12px;padding:28px;width:400px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
       <div style="font-size:1rem;font-weight:700;margin-bottom:20px;">Edit Creator</div>
       <label style="font-size:0.75rem;font-weight:700;color:#6b7280;letter-spacing:0.1em;text-transform:uppercase;">Full Name</label>
